@@ -30,6 +30,7 @@
 <meta property="og:description" content="Build your baby's full nap schedule in seconds. Age-adaptive awake windows, live countdown to the next nap, and sleep budget tracking. Free, no sign-up."/>
 <meta property="og:url" content="https://nappy-beta.vercel.app/"/>
 <meta property="og:image" content="https://nappy-beta.vercel.app/og-image.svg"/>
+<meta property="og:image:type" content="image/svg+xml"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
 <meta property="og:image:alt" content="Nappy — baby nap planner showing plan day, right now countdown, and weekly sleep history screens"/>
@@ -443,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <button class="sbtn" id="bEM"  onclick="doEmail()"><span class="si">📧</span>Email</button>
     </div>
   </div>
-  <p class="fnote">🌿 Always follow your baby's individual sleepy cues. Consult your pediatrician with any sleep concerns.</p>
+  <p class="fnote">🌿 <strong>Educational purposes only.</strong> Not a substitute for professional medical advice. Always follow your baby's individual cues and consult your pediatrician or a certified pediatric sleep specialist with any concerns about your baby's sleep or development.</p>
 </div>
 </div>
 
@@ -641,33 +642,33 @@ function getSleep(wks){
   //   Always follow your baby's individual cues — these are guides, not rules.
 
   // 0–4w  | CC: 30–60 min | Huckleberry: 30–90 min | → 30–60 min
-  if(wks<4)  return{ww1:30, ww2:60,  d1:20,d2:90,  n:6, stage:'🌱 Newborn (0–4w)',  tot:960, tL:'14–17 hrs', tip:"Newborns have extremely short awake windows — often just time for a feed and diaper change before the next nap. No schedule needed yet. Simply respond to sleepy cues: eye rubbing, yawning, zoning out."};
+  if(wks<4)  return{ww1:30, ww2:60,  d1:20,d2:90,  n:6, bedBuf:60,  stage:'🌱 Newborn (0–4w)',  tot:960, tL:'14–17 hrs', tip:"Newborns have extremely short awake windows — often just time for a feed and diaper change before the next nap. No schedule needed yet. Simply respond to sleepy cues: eye rubbing, yawning, zoning out."};
   // 4–8w  | CC: 60–120 min (1–3mo band) | Huckleberry: 45–75 min | → 45–90 min
-  if(wks<8)  return{ww1:45, ww2:90,  d1:20,d2:90,  n:5, stage:'🌱 Newborn (4–8w)',  tot:930, tL:'14–17 hrs', tip:"Sleep is still unpredictable. Short naps of 20–45 min are completely normal at this age. Cues matter more than the clock."};
+  if(wks<8)  return{ww1:45, ww2:90,  d1:20,d2:90,  n:5, bedBuf:60,  stage:'🌱 Newborn (4–8w)',  tot:930, tL:'14–17 hrs', tip:"Sleep is still unpredictable. Short naps of 20–45 min are completely normal at this age. Cues matter more than the clock."};
   // 8–12w | CC: 60–120 min | Huckleberry: 60–120 min | → 60–105 min
-  if(wks<12) return{ww1:60, ww2:105, d1:30,d2:90,  n:5, stage:'🌱 Newborn (8–12w)', tot:900, tL:'14–16 hrs', tip:"Awake windows are slowly lengthening. A loose rhythm may be emerging, but day-to-day variation is still completely normal."};
+  if(wks<12) return{ww1:60, ww2:105, d1:30,d2:90,  n:5, bedBuf:60,  stage:'🌱 Newborn (8–12w)', tot:900, tL:'14–16 hrs', tip:"Awake windows are slowly lengthening. A loose rhythm may be emerging, but day-to-day variation is still completely normal."};
   // 3mo   | CC: 75–150 min (3–4mo band) | Huckleberry: 60–120 min | → 75–120 min
-  if(mo<4)   return{ww1:75, ww2:120, d1:30,d2:90,  n:4, stage:'🍃 3 months',         tot:870, tL:'14–16 hrs', tip:"The 4-month sleep regression is approaching. Circadian rhythms are maturing — a consistent pre-nap wind-down (dim lights, white noise) starts to help now."};
+  if(mo<4)   return{ww1:75, ww2:120, d1:30,d2:90,  n:4, bedBuf:60,  stage:'🍃 3 months',         tot:870, tL:'14–16 hrs', tip:"The 4-month sleep regression is approaching. Circadian rhythms are maturing — a consistent pre-nap wind-down (dim lights, white noise) starts to help now."};
   // 4mo   | CC: 75–150 min | Huckleberry: 90–120 min | → 90–135 min
-  if(mo<5)   return{ww1:90, ww2:135, d1:30,d2:90,  n:4, stage:'🌸 4 months',         tot:840, tL:'13–15 hrs', tip:"The 4-month regression disrupts many families as sleep cycles mature. Keep a dark room, consistent cues, and stay patient — it passes within a few weeks."};
+  if(mo<5)   return{ww1:90, ww2:135, d1:30,d2:90,  n:4, bedBuf:60,  stage:'🌸 4 months',         tot:840, tL:'13–15 hrs', tip:"The 4-month regression disrupts many families as sleep cycles mature. Keep a dark room, consistent cues, and stay patient — it passes within a few weeks."};
   // 5mo   | CC: 120–240 min (5–7mo band) | Huckleberry: 90–150 min | → 105–150 min
-  if(mo<6)   return{ww1:105,ww2:150, d1:45,d2:120, n:3, stage:'🌻 5 months',         tot:810, tL:'12–15 hrs', tip:"Three naps fits well at this age. Aim for the last nap to end by 4:30–5:00 pm so enough sleep pressure builds before bedtime."};
+  if(mo<6)   return{ww1:105,ww2:150, d1:45,d2:120, n:3, bedBuf:90,  stage:'🌻 5 months',         tot:810, tL:'12–15 hrs', tip:"Three naps fits well at this age. Aim for the last nap to end by 4:30–5:00 pm so enough sleep pressure builds before bedtime."};
   // 6mo   | CC: 120–240 min | Huckleberry: 120–150 min | → 120–165 min
-  if(mo<7)   return{ww1:120,ww2:165, d1:60,d2:120, n:3, stage:'🌻 6 months',         tot:810, tL:'12–15 hrs', tip:"If naps are consistently short (under 45 min), try extending the awake window by 10–15 min before each nap."};
+  if(mo<7)   return{ww1:120,ww2:165, d1:60,d2:120, n:3, bedBuf:90,  stage:'🌻 6 months',         tot:810, tL:'12–15 hrs', tip:"If naps are consistently short (under 45 min), try extending the awake window by 10–15 min before each nap."};
   // 7–8mo | CC: 150–270 min (7–10mo band) | Huckleberry: 150–180 min | → 150–195 min
-  if(mo<9)   return{ww1:150,ww2:195, d1:60,d2:120, n:3, stage:'🌿 7–8 months',       tot:780, tL:'12–14 hrs', tip:"Watch for the 3→2 nap transition: shortened naps, bedtime resistance, or skipping the third nap 3+ days in a row are clear signals."};
+  if(mo<9)   return{ww1:150,ww2:195, d1:60,d2:120, n:3, bedBuf:90,  stage:'🌿 7–8 months',       tot:780, tL:'12–14 hrs', tip:"Watch for the 3→2 nap transition: shortened naps, bedtime resistance, or skipping the third nap 3+ days in a row are clear signals."};
   // 9mo   | CC: 150–270 min | Huckleberry: 165–210 min | → 165–225 min
-  if(mo<10)  return{ww1:165,ww2:225, d1:60,d2:120, n:2, stage:'🌾 9 months',         tot:750, tL:'12–14 hrs', tip:"Two naps at this stage. Keep total daytime sleep around 2.5–3.5 hours so there's enough sleep pressure for a smooth bedtime."};
+  if(mo<10)  return{ww1:165,ww2:225, d1:60,d2:120, n:2, bedBuf:120, stage:'🌾 9 months',         tot:750, tL:'12–14 hrs', tip:"Two naps at this stage. Keep total daytime sleep around 2.5–3.5 hours so there's enough sleep pressure for a smooth bedtime."};
   // 10–11mo | CC: 180–360 min (10–12mo band) | Huckleberry: 180–225 min | → 180–240 min
-  if(mo<12)  return{ww1:180,ww2:240, d1:60,d2:120, n:2, stage:'🌾 10–11 months',     tot:750, tL:'12–14 hrs', tip:"AASM recommends 12–16 hrs total at this age. Protect nighttime sleep — too much daytime napping can fragment nights."};
+  if(mo<12)  return{ww1:180,ww2:240, d1:60,d2:120, n:2, bedBuf:120, stage:'🌾 10–11 months',     tot:750, tL:'12–14 hrs', tip:"AASM recommends 12–16 hrs total at this age. Protect nighttime sleep — too much daytime napping can fragment nights."};
   // 12–13mo | Huckleberry: 180–255 min | Ferry: ~210–255 min | → 195–255 min
-  if(mo<14)  return{ww1:195,ww2:255, d1:60,d2:120, n:2, stage:'🌟 12–13 months',     tot:720, tL:'11–14 hrs', tip:"Some toddlers begin resisting the morning nap. Try pushing it 15 min later every few days rather than dropping it abruptly."};
+  if(mo<14)  return{ww1:195,ww2:255, d1:60,d2:120, n:2, bedBuf:150, stage:'🌟 12–13 months',     tot:720, tL:'11–14 hrs', tip:"Some toddlers begin resisting the morning nap. Try pushing it 15 min later every few days rather than dropping it abruptly."};
   // 14–17mo | Huckleberry: 240–300 min, transitioning to 1 nap | → 240–300 min
-  if(mo<18)  return{ww1:240,ww2:300, d1:60,d2:150, n:2, stage:'⭐ 14–17 months',     tot:720, tL:'11–14 hrs', tip:"The 2→1 nap transition typically happens between 15–18 months. Consistent refusal of one nap 3+ times a week is the clearest signal to transition."};
+  if(mo<18)  return{ww1:240,ww2:300, d1:60,d2:150, n:2, bedBuf:180, stage:'⭐ 14–17 months',     tot:720, tL:'11–14 hrs', tip:"The 2→1 nap transition typically happens between 15–18 months. Consistent refusal of one nap 3+ times a week is the clearest signal to transition."};
   // 18–23mo | 1 nap, awake window ~5–6 hrs | → 300–360 min
-  if(mo<24)  return{ww1:300,ww2:360, d1:60,d2:180, n:1, stage:'✨ 18–23 months',     tot:690, tL:'11–14 hrs', tip:"One consolidated nap is the goal now. Aim for around midday and cap it at 2–2.5 hours to protect a 7:00–7:30 pm bedtime."};
+  if(mo<24)  return{ww1:300,ww2:360, d1:60,d2:180, n:1, bedBuf:240, stage:'✨ 18–23 months',     tot:690, tL:'11–14 hrs', tip:"One consolidated nap is the goal now. Aim for around midday and cap it at 2–2.5 hours to protect a 7:00–7:30 pm bedtime."};
   // 24–36mo | awake window ~5–7 hrs | → 300–420 min
-  return       {ww1:300,ww2:420, d1:60,d2:120, n:1, stage:'🌙 2–3 year old',         tot:660, tL:'10–13 hrs', tip:"Naps may become inconsistent. Even a quiet rest period in a darkened room without actual sleep provides meaningful recovery for a toddler's developing brain."};
+  return       {ww1:300,ww2:420, d1:60,d2:120, n:1, bedBuf:300, stage:'🌙 2–3 year old',         tot:660, tL:'10–13 hrs', tip:"Naps may become inconsistent. Even a quiet rest period in a darkened room without actual sleep provides meaningful recovery for a toddler's developing brain."};
 }
 
 // ─────────────────────────────────────
@@ -758,8 +759,12 @@ function buildPlan(d, wakeM, bedM, lastNapEndStr, napNum, countOvr, loggedNapDur
   const alreadyDone = napNum - 1;
   const remaining   = Math.max(1, count - alreadyDone);
 
+  // Minimum wake time before bedtime for adequate sleep pressure.
+  // Source: babysleepscience.com, sleep.com, mattressmiracle.ca
+  // Stored per-age in d.bedBuf (minutes). Falls back to 60 if missing.
+  const bedBuf = d.bedBuf || 60;
+
   // Sleep budget: how much daytime sleep is still needed?
-  // Full day target minus whatever's already been banked in logged naps.
   const dayTarget = count * dMid;
   const banked = Object.values(loggedNapDurations||{}).reduce((s,v)=>s+v, 0);
   let budgetLeft = Math.max(remaining * d.d1, dayTarget - banked);
@@ -767,15 +772,17 @@ function buildPlan(d, wakeM, bedM, lastNapEndStr, napNum, countOvr, loggedNapDur
   for(let i = 0; i < remaining; i++){
     const labelNum = napNum + i;
     const st = prevWake + wwMid;
-    if(st >= bedM - 30) break;
+    // Skip this nap if it would START too close to bed
+    if(st >= bedM - bedBuf) break;
 
     // Spread remaining budget evenly, keeping within age min/max per nap
     const napsLeft = remaining - i;
     const napDm = Math.min(d.d2, Math.max(d.d1, Math.round(budgetLeft / napsLeft)));
-    const en = Math.min(st + napDm, bedM - 30);
+    // Nap must END at least bedBuf minutes before bedtime
+    const en = Math.min(st + napDm, bedM - bedBuf);
     const ww = st - prevWake;
     let risk = ww < d.ww1 - 10 ? 'warn' : 'good';
-    if(st > bedM - 90) risk = 'late';
+    if(en > bedM - bedBuf - 15) risk = 'late';
 
     result.push({
       i: labelNum, st, en, dm: napDm,
@@ -794,6 +801,8 @@ function buildPlan(d, wakeM, bedM, lastNapEndStr, napNum, countOvr, loggedNapDur
 // NAP STATUS (live)
 // ─────────────────────────────────────
 function napSt(n){
+  // Only apply live time status if the selected date is today
+  if(!isPlanningToday()) return n.ae!=null?'past':'future';
   const now=nowM();
   if(n.ae!=null) return 'past';
   if(now>n.en+5) return 'past';
@@ -801,6 +810,12 @@ function napSt(n){
   if(now>=n.ws&&now<n.we) return 'window';
   if(now>=n.we&&now<n.st) return 'overdue';
   return now<n.ws?'future':'future';
+}
+function isPlanningToday(){
+  const sel=document.getElementById('todayDate').value;
+  if(!sel) return true; // no date set, assume today
+  const today=new Date().toISOString().split('T')[0];
+  return sel===today;
 }
 
 // ─────────────────────────────────────
@@ -875,14 +890,15 @@ function calc(isRecalc){
     const dotC= st==='past'?'d-past':st==='now'?'d-now':st==='window'?'d-window':idx===0?'d-next':'d-future';
 
     let slLbl, slCls;
-    if(st==='past')          {slLbl='✓ Done';             slCls='sl-past';}
-    else if(st==='now')      {slLbl='😴 Sleeping now';     slCls='sl-now';}
-    else if(st==='window')   {slLbl='🟢 Window open!';     slCls='sl-window';}
-    else if(st==='overdue')  {slLbl='⚡ Window passed';    slCls='sl-late';}
-    else if(nap.risk==='late'){slLbl='🌅 Close to bed';    slCls='sl-late';}
-    else if(nap.risk==='warn'){slLbl='⚡ Slightly early';  slCls='sl-soon';}
-    else if(idx===0)          {slLbl='⏭ Up next';          slCls='sl-next';}
-    else                      {slLbl='📋 Scheduled';        slCls='sl-future';}
+    const isToday=isPlanningToday();
+    if(st==='past')                        {slLbl='✓ Done';             slCls='sl-past';}
+    else if(st==='now')                    {slLbl='😴 Sleeping now';     slCls='sl-now';}
+    else if(st==='window')                 {slLbl='🟢 Window open!';     slCls='sl-window';}
+    else if(st==='overdue')                {slLbl='⚡ Window passed';    slCls='sl-late';}
+    else if(nap.risk==='late')             {slLbl='🌅 Close to bed';     slCls='sl-late';}
+    else if(nap.risk==='warn'&&isToday)    {slLbl='⚡ Slightly early';   slCls='sl-soon';}
+    else if(idx===0&&isToday)              {slLbl='⏭ Up next';           slCls='sl-next';}
+    else                                   {slLbl='📋 Scheduled';         slCls='sl-future';}
 
     const wakeGap = nap.st - prevWakeForBridge;
     h += `<div class="bridge" style="margin:5px 0 3px;opacity:.7"><div class="bdot"></div><span>${durStr(wakeGap)} awake · nap window: ${fmt(nap.ws)}–${fmt(nap.we)}</span></div>`;
@@ -930,7 +946,7 @@ function calc(isRecalc){
   document.getElementById('tipW').innerHTML = `<div class="tip"><div class="tip-i">💡</div><div><div class="tip-lbl">Sleep tip · ${d.stage}</div><div class="tip-txt">${d.tip}</div></div></div>`;
 
   document.getElementById('sciW').innerHTML = `<div class="sci-note">
-    <strong>About these numbers:</strong> Total sleep goals follow AASM/AAP consensus guidelines (Paruthi et al., <em>J Clin Sleep Med</em> 2016, endorsed by the American Academy of Pediatrics). Wake window ranges are clinical practice guidelines from board-certified pediatric sleep medicine practitioners, grounded in adenosine/sleep-pressure physiology. They are helpful guides — not rigid rules. Every baby varies. Always follow your baby's individual sleepy cues and consult your pediatrician with any concerns.
+    <strong>For educational purposes only.</strong> Nappy provides general sleep planning guidance based on AASM/AAP consensus guidelines (Paruthi et al., <em>J Clin Sleep Med</em> 2016) and clinical practice guidelines from board-certified pediatric sleep medicine practitioners. It is <strong>not a substitute for professional medical advice</strong>. Every baby is different — always follow your baby's individual sleepy cues. If you have concerns about your baby's sleep, feeding, or development, consult your pediatrician or a certified pediatric sleep specialist.
   </div>`;
 
   // Save to history
@@ -1211,9 +1227,35 @@ async function doJPG(){
   buildSC();const c=document.getElementById('shareCard');
   c.style.left='0';c.style.top='-9999px';c.style.zIndex='-1';
   await new Promise(r=>setTimeout(r,250));
-  try{const cv=await html2canvas(c,{scale:2,backgroundColor:'#FAF7F2'});c.style.left='-9999px';const a=document.createElement('a');a.download='nappy.jpg';a.href=cv.toDataURL('image/jpeg',.95);a.click();toast('JPG saved 📷');}
-  catch(e){toast('Export failed');}
+  try{
+    const cv=await html2canvas(c,{scale:2,backgroundColor:'#FAF7F2'});
+    c.style.left='-9999px';
+    const dataUrl=cv.toDataURL('image/jpeg',.95);
+    // Mobile-friendly: show image in overlay so user can long-press save (iOS)
+    // or use native share. Desktop gets a direct download link.
+    const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if(isMobile){
+      showImgOverlay(dataUrl);
+    } else {
+      const a=document.createElement('a');a.download='nappy.jpg';a.href=dataUrl;a.click();
+      toast('JPG saved to Downloads 📷');
+    }
+  }
+  catch(e){toast('Export failed — try PDF instead');}
   b.classList.remove('loading');b.innerHTML='<span class="si">📷</span>JPG';
+}
+function showImgOverlay(dataUrl){
+  // Remove any existing overlay
+  const old=document.getElementById('imgOverlay');if(old)old.remove();
+  const ov=document.createElement('div');
+  ov.id='imgOverlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML=`
+    <div style="color:#fff;font-size:.8rem;font-weight:700;letter-spacing:.05em;margin-bottom:14px;opacity:.8">HOLD IMAGE TO SAVE · TAP OUTSIDE TO CLOSE</div>
+    <img src="${dataUrl}" style="max-width:100%;max-height:75vh;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.5)"/>
+    <button onclick="document.getElementById('imgOverlay').remove()" style="margin-top:18px;background:rgba(255,255,255,.15);border:none;color:#fff;padding:12px 32px;border-radius:999px;font-size:.9rem;font-weight:600;cursor:pointer;">✕  Close</button>`;
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  document.body.appendChild(ov);
 }
 async function doPDF(){
   if(!plan.length){toast('Build a plan first!');return;}
@@ -1233,18 +1275,52 @@ async function doPDF(){
 function doTXT(){
   if(!plan.length){toast('Build a plan first!');return;}
   const name=babyN||'Baby',date=document.getElementById('todayDate').value||'Today',bedM=toM(document.getElementById('bedGoal').value||'19:30'),onM=getON();
-  let t=`NAPPY · ${name}'s Sleep Plan · ${date}\n${'─'.repeat(40)}\n\nOVERNIGHT SLEEP: ${durStr(onM)}\n\n`;
-  plan.forEach(n=>{t+=`NAP ${n.i}\n  Time: ${fmt(n.st)} → ${fmt(n.en)} (~${durStr(n.dm)})\n  Window: ${fmt(n.ws)} – ${fmt(n.we)}\n`;if(n.as!=null)t+=`  Actual: ${fmt(n.as)} → ${fmt(n.ae)}\n`;t+='\n';});
-  t+=`BEDTIME GOAL: ${fmt(bedM)}\n\nBased on AASM/AAP sleep guidelines · Generated with Nappy`;
-  const bl=new Blob([t],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='nappy.txt';a.click();toast('TXT saved 📝');
+  const line='-'.repeat(40);
+  let t='NAPPY - ' + name + "'s Sleep Plan - " + date + '\n' + line + '\n\n';
+  t+='OVERNIGHT SLEEP: ' + durStr(onM) + '\n';
+  t+='  ' + fmt(toM(document.getElementById('lastBed').value||'19:30')) + ' to ' + fmt(toM(document.getElementById('mornWake').value||'07:00')) + '\n\n';
+  t+='DAYTIME NAPS\n\n';
+  plan.forEach(n=>{
+    t+='  NAP ' + n.i + '\n';
+    t+='  Put down : ' + fmt(n.st) + '\n';
+    t+='  Wake up  : ' + fmt(n.en) + '\n';
+    t+='  Duration : ~' + durStr(n.dm) + '\n';
+    t+='  Window   : ' + fmt(n.ws) + ' - ' + fmt(n.we) + '\n';
+    if(n.as!=null) t+='  Actual   : ' + fmt(n.as) + ' to ' + fmt(n.ae) + '\n';
+    t+='\n';
+  });
+  t+='BEDTIME GOAL: ' + fmt(bedM) + '\n\n';
+  t+=line + '\n';
+  t+='DISCLAIMER: For educational purposes only. These are general guidelines\n';
+  t+='based on AASM/AAP consensus recommendations and clinical guidance from\n';
+  t+='board-certified pediatricians. Every baby is different. Always follow\n';
+  t+="your baby's individual cues and consult your pediatrician or a certified\n";
+  t+='pediatric sleep specialist with any concerns.\n\n';
+  t+='Generated with Nappy - nappy-beta.vercel.app';
+  const bl=new Blob([t],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='nappy.txt';a.click();toast('TXT saved');
 }
 function doEmail(){
   if(!plan.length){toast('Build a plan first!');return;}
   const name=babyN||'Baby',date=document.getElementById('todayDate').value||'Today',bedM=toM(document.getElementById('bedGoal').value||'19:30'),onM=getON();
   const sub=encodeURIComponent(`${name}'s Nap Plan · ${date}`);
-  let body=`${name}'s Sleep Plan · ${date}\n\nOvernight: ${durStr(onM)}\n\n`;
-  plan.forEach(n=>{body+=`Nap ${n.i}: ${fmt(n.st)} → ${fmt(n.en)} (~${durStr(n.dm)})\nWindow: ${fmt(n.ws)}–${fmt(n.we)}\n`;if(n.as!=null)body+=`Actual: ${fmt(n.as)}–${fmt(n.ae)}\n`;body+='\n';});
-  body+=`Bedtime: ${fmt(bedM)}\n\nBased on AASM/AAP guidelines · Generated with Nappy`;
+  const line='─'.repeat(36);
+  let body=`${name}'s Nap Plan · ${date}\n${line}\n\n`;
+  body+=`🌙 Overnight sleep\n   ${fmt(toM(document.getElementById('lastBed').value||'19:30'))} → ${fmt(toM(document.getElementById('mornWake').value||'07:00'))}  (${durStr(onM)})\n\n`;
+  body+=`☀️  Daytime naps\n\n`;
+  plan.forEach(n=>{
+    body+=`  Nap ${n.i}\n`;
+    body+=`  Put down : ${fmt(n.st)}\n`;
+    body+=`  Wake up  : ${fmt(n.en)}\n`;
+    body+=`  Duration : ~${durStr(n.dm)}\n`;
+    body+=`  Window   : ${fmt(n.ws)} – ${fmt(n.we)}\n`;
+    if(n.as!=null) body+=`  Actual   : ${fmt(n.as)} → ${fmt(n.ae)}\n`;
+    body+='\n';
+  });
+  body+=`🌙 Bedtime goal\n   ${fmt(bedM)}\n\n`;
+  body+=`${line}\n`;
+  body+=`⚠️  For educational purposes only. These are general guidelines based on AASM/AAP consensus recommendations and clinical guidance from board-certified pediatricians. Every baby is different — always follow your baby's individual cues and consult your pediatrician or a certified pediatric sleep specialist with any concerns.\n\n`;
+  body+=`Generated with Nappy · nappy-beta.vercel.app`;
   window.location.href=`mailto:?subject=${sub}&body=${encodeURIComponent(body)}`;toast('Opening email 📧');
 }
 
