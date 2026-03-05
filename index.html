@@ -239,6 +239,12 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 
 /* SCIENCE NOTE */
 .sci-note{background:var(--amber-bg);border-radius:13px;padding:10px 12px;font-size:.72rem;color:var(--text);line-height:1.5;margin-top:6px}
+.iico{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--border);color:var(--muted);font-size:.6rem;font-weight:800;cursor:pointer;vertical-align:middle;margin-left:3px;flex-shrink:0;user-select:none}
+.iico:hover{background:var(--blue-lt);color:var(--blue)}
+.tipbox{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:80px;width:min(90vw,360px);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:.76rem;color:var(--text);line-height:1.55;box-shadow:var(--shl);z-index:500}
+.tipbox.on{display:block}
+.tipbox-title{font-weight:700;color:var(--blue);margin-bottom:5px;font-size:.78rem}
+.tipbox-close{float:right;cursor:pointer;font-size:.9rem;color:var(--muted);margin-left:8px;line-height:1}
 .sci-note strong{color:var(--amber);font-weight:700}
 
 /* SHARE */
@@ -346,13 +352,81 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 </div>
 
 <div class="tabs">
-  <button class="tab on" id="t0" onclick="tab(0)">📋 Plan Day</button>
-  <button class="tab"    id="t1" onclick="tab(1)">⚡ Right Now</button>
+  <button class="tab on" id="t0" onclick="tab(0)">⚡ Right Now</button>
+  <button class="tab"    id="t1" onclick="tab(1)">📋 Plan Day</button>
   <button class="tab"    id="t2" onclick="tab(2)">📅 This Week</button>
 </div>
 
-<!-- ======== TAB 0: PLAN DAY ======== -->
+<!-- ======== TAB 0: RIGHT NOW ======== -->
 <div class="panel on" id="p0">
+<div class="wrap">
+
+  <div class="sec">Current situation</div>
+  <div class="card">
+    <div class="g2" style="margin-bottom:12px">
+      <div>
+        <label class="fl">Baby's age</label>
+        <div class="atgl" style="margin-bottom:0">
+          <button class="on" id="nBW" onclick="setNM('weeks')">Weeks</button>
+          <button id="nBM" onclick="setNM('months')">Months</button>
+        </div>
+      </div>
+      <div>
+        <label class="fl">Age</label>
+        <input class="inp" id="nAge" type="number" min="0" max="36" value="8" style="text-align:center"/>
+      </div>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div>
+        <label class="fl">Last woke up at <span class="iico" onclick="showTip('ww')">i</span></label>
+        <input class="inp" id="nLW" type="time"/>
+      </div>
+      <div>
+        <label class="fl">Which nap is this?</label>
+        <input class="inp" id="nNN" type="number" min="1" max="6" value="1" style="text-align:center"/>
+      </div>
+    </div>
+    <div>
+      <label class="fl">Baby's current state</label>
+      <div class="sleep-toggle">
+        <button class="on" id="nSA" onclick="setNS(false)">😊 Awake</button>
+        <button id="nSS" onclick="setNS(true)">😴 Sleeping now</button>
+      </div>
+    </div>
+    <div id="napStartWrap" style="display:none;margin-top:10px">
+      <label class="fl">Nap started at</label>
+      <input class="inp" id="nNS" type="time"/>
+    </div>
+  </div>
+
+  <button class="cta" onclick="predict()">Predict Next Nap ⚡</button>
+
+  <div id="predRes" style="margin-top:12px">
+    <div class="now-hero fu" id="nowHero">
+      <div class="now-lbl" id="nHLbl"></div>
+      <div class="now-cd" id="nCD">—</div>
+      <div class="now-sub" id="nSub"></div>
+      <div class="now-chips" id="nChips"></div>
+    </div>
+    <div class="status-pill" id="nSPill"></div>
+    <div class="card fu d1" id="nDetail"></div>
+    <div class="card fu d2" style="padding:16px;text-align:center" id="nRemCard">
+      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:9px">Set a Reminder</div>
+      <div class="rem-btns">
+        <button class="rem-btn" id="rb5"  onclick="setRem(5)">⏰ 5 min before</button>
+        <button class="rem-btn" id="rb10" onclick="setRem(10)">⏰ 10 min before</button>
+        <button class="rem-btn" id="rb15" onclick="setRem(15)">⏰ 15 min before</button>
+        <button class="rem-btn rem-cancel" id="rbCancel" onclick="cancelRem()" style="display:none">✕ Cancel</button>
+      </div>
+      <div class="rem-status" id="rSt"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ======== TAB 2: THIS WEEK ======== -->
+<div class="panel" id="p1">
 <div class="wrap">
 
   <div class="sec">Baby's info</div>
@@ -435,7 +509,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div id="tlC"></div>
     </div>
     <div id="tipW" class="fu d3"></div>
-    <div id="sciW" class="fu d3"></div>
+    <div id="sciW"></div>
     <div class="sbar fu d4">
       <div class="sbar-t">Share this plan</div>
       <button class="sbtn" id="bJPG" onclick="doJPG()"><span class="si">📷</span>JPG</button>
@@ -448,76 +522,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 </div>
 </div>
 
-<!-- ======== TAB 1: RIGHT NOW ======== -->
-<div class="panel" id="p1">
-<div class="wrap">
-
-  <div class="sec">Current situation</div>
-  <div class="card">
-    <div class="g2" style="margin-bottom:12px">
-      <div>
-        <label class="fl">Baby's age</label>
-        <div class="atgl" style="margin-bottom:0">
-          <button class="on" id="nBW" onclick="setNM('weeks')">Weeks</button>
-          <button id="nBM" onclick="setNM('months')">Months</button>
-        </div>
-      </div>
-      <div>
-        <label class="fl">Age</label>
-        <input class="inp" id="nAge" type="number" min="0" max="36" value="8" style="text-align:center"/>
-      </div>
-    </div>
-    <div class="g2" style="margin-bottom:12px">
-      <div>
-        <label class="fl">Last woke up at <span id="wwInfo" onclick="toggleWWInfo()" style="cursor:pointer;background:var(--border);border-radius:50%;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;vertical-align:middle;margin-left:3px">?</span></label>
-        <div id="wwInfoBox" style="display:none;font-size:.72rem;background:var(--blue-bg);border-radius:9px;padding:8px 10px;margin-bottom:7px;color:var(--text);line-height:1.5"><strong style="color:var(--blue)">What's an awake window?</strong> It's the time your baby can comfortably stay awake between naps. Too short = won't fall asleep. Too long = overtired and cranky. Nappy calculates the sweet spot for your baby's age automatically.</div>
-        <input class="inp" id="nLW" type="time"/>
-      </div>
-      <div>
-        <label class="fl">Which nap is this?</label>
-        <input class="inp" id="nNN" type="number" min="1" max="6" value="1" style="text-align:center"/>
-      </div>
-    </div>
-    <div>
-      <label class="fl">Baby's current state</label>
-      <div class="sleep-toggle">
-        <button class="on" id="nSA" onclick="setNS(false)">😊 Awake</button>
-        <button id="nSS" onclick="setNS(true)">😴 Sleeping now</button>
-      </div>
-    </div>
-    <div id="napStartWrap" style="display:none;margin-top:10px">
-      <label class="fl">Nap started at</label>
-      <input class="inp" id="nNS" type="time"/>
-    </div>
-  </div>
-
-  <button class="cta" onclick="predict()">Predict Next Nap ⚡</button>
-
-  <div id="predRes" style="margin-top:12px">
-    <div class="now-hero fu" id="nowHero">
-      <div class="now-lbl" id="nHLbl"></div>
-      <div class="now-cd" id="nCD">—</div>
-      <div class="now-sub" id="nSub"></div>
-      <div class="now-chips" id="nChips"></div>
-    </div>
-    <div class="status-pill" id="nSPill"></div>
-    <div class="card fu d1" id="nDetail"></div>
-    <div class="card fu d2" style="padding:16px;text-align:center" id="nRemCard">
-      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:9px">Set a Reminder</div>
-      <div class="rem-btns">
-        <button class="rem-btn" id="rb5"  onclick="setRem(5)">⏰ 5 min before</button>
-        <button class="rem-btn" id="rb10" onclick="setRem(10)">⏰ 10 min before</button>
-        <button class="rem-btn" id="rb15" onclick="setRem(15)">⏰ 15 min before</button>
-        <button class="rem-btn rem-cancel" id="rbCancel" onclick="cancelRem()" style="display:none">✕ Cancel</button>
-      </div>
-      <div class="rem-status" id="rSt"></div>
-    </div>
-  </div>
-
-</div>
-</div>
-
-<!-- ======== TAB 2: THIS WEEK ======== -->
+<!-- ======== TAB 1: PLAN DAY ======== -->
 <div class="panel" id="p2">
 <div class="wrap">
   <div class="sec">Sleep history <span style="font-weight:400;text-transform:none;letter-spacing:0;margin-left:2px">· saved on this device</span></div>
@@ -530,6 +535,11 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 
 <div id="shareCard"></div>
 <div id="toast"></div>
+<div class="tipbox" id="tipbox">
+  <span class="tipbox-close" onclick="hideTip()">✕</span>
+  <div class="tipbox-title" id="tipTitle"></div>
+  <div id="tipBody"></div>
+</div>
 
 <script>
 // ─────────────────────────────────────
@@ -593,7 +603,7 @@ function tab(n){
     document.getElementById('p'+i).classList.toggle('on',i===n);
   }
   if(n===2) renderHist();
-  if(n===1) tryAutoPredict();
+  if(n===0) tryAutoPredict();
 }
 function tryAutoPredict(){
   // Auto-run predict if age is set (nLW is pre-filled from init)
@@ -846,7 +856,7 @@ function calc(isRecalc){
   document.getElementById('stgBdg').textContent = `${d.stage} · ${al}`;
   document.getElementById('resHL').innerHTML    = `${babyN?`<em style="font-style:italic;color:var(--rose)">${name}</em>'s`:"Today's"} full nap plan`;
   document.getElementById('pbV').textContent    = durStr(totM);
-  document.getElementById('pbS').textContent    = `AASM goal: ${d.tL} · ${durStr(onM)} overnight + ${durStr(dayM)} daytime`;
+  document.getElementById('pbS').innerHTML = `<span onclick="showTip('aasm')" style="cursor:pointer">AASM goal <span class='iico'>i</span></span>: ${d.tL} · ${durStr(onM)} overnight + ${durStr(dayM)} daytime`;
   setTimeout(()=>{ document.getElementById('pbF').style.width = pct+'%'; }, 320);
 
   // ── TIMELINE HTML ──
@@ -891,17 +901,17 @@ function calc(isRecalc){
 
     let slLbl, slCls;
     const isToday=isPlanningToday();
+    // Plan Day tab shows schedule windows only — no "Sleeping now" assumption
     if(st==='past')                        {slLbl='✓ Done';             slCls='sl-past';}
-    else if(st==='now')                    {slLbl='😴 Sleeping now';     slCls='sl-now';}
-    else if(st==='window')                 {slLbl='🟢 Window open!';     slCls='sl-window';}
+    else if(st==='now'||st==='window')     {slLbl='🟢 Window open';     slCls='sl-window';}
     else if(st==='overdue')                {slLbl='⚡ Window passed';    slCls='sl-late';}
     else if(nap.risk==='late')             {slLbl='🌅 Close to bed';     slCls='sl-late';}
     else if(nap.risk==='warn'&&isToday)    {slLbl='⚡ Slightly early';   slCls='sl-soon';}
     else if(idx===0&&isToday)              {slLbl='⏭ Up next';           slCls='sl-next';}
-    else                                   {slLbl='📋 Scheduled';         slCls='sl-future';}
+    else                                   {slLbl='📋 Scheduled';        slCls='sl-future';}
 
     const wakeGap = nap.st - prevWakeForBridge;
-    h += `<div class="bridge" style="margin:5px 0 3px;opacity:.7"><div class="bdot"></div><span>${durStr(wakeGap)} awake · nap window: ${fmt(nap.ws)}–${fmt(nap.we)}</span></div>`;
+    h += `<div class="bridge" style="margin:5px 0 3px;opacity:.7"><div class="bdot"></div><span>${durStr(wakeGap)} awake · nap window <span class='iico' onclick='showTip("napwin")'>i</span>: ${fmt(nap.ws)}–${fmt(nap.we)}</span></div>`;
 
     h += `<div class="nb ${cls}" id="nb${nap.i}">
       <div class="nb-dot ${dotC}"></div>
@@ -917,7 +927,7 @@ function calc(isRecalc){
       ${nap.budgetAdjusted?`<div style="font-size:.69rem;color:var(--amber);background:var(--amber-bg);border-radius:8px;padding:4px 8px;margin-bottom:6px">⚖️ Shortened — earlier nap(s) banked extra sleep today</div>`:''}
       <div class="lgbdg" id="lgb${nap.i}"></div>
       <div class="nb-acts">
-        ${(st==='past'||st==='now'||st==='window'||st==='overdue')?`<button class="nb-act act-log" onclick="togLog(${nap.i})">📝 Log actual</button>`:''}
+        ${(st==='past'||st==='window'||st==='overdue')?`<button class="nb-act act-log" onclick="togLog(${nap.i})">📝 Log actual</button>`:''}
         <button class="nb-act act-rem" id="remB${nap.i}" onclick="setNapRem(${nap.i},${nap.st})">🔔 Remind me</button>
       </div>
       <div class="lf" id="lf${nap.i}">
@@ -945,9 +955,7 @@ function calc(isRecalc){
 
   document.getElementById('tipW').innerHTML = `<div class="tip"><div class="tip-i">💡</div><div><div class="tip-lbl">Sleep tip · ${d.stage}</div><div class="tip-txt">${d.tip}</div></div></div>`;
 
-  document.getElementById('sciW').innerHTML = `<div class="sci-note">
-    <strong>For educational purposes only.</strong> Nappy provides general sleep planning guidance based on AASM/AAP consensus guidelines (Paruthi et al., <em>J Clin Sleep Med</em> 2016) and clinical practice guidelines from board-certified pediatric sleep medicine practitioners. It is <strong>not a substitute for professional medical advice</strong>. Every baby is different — always follow your baby's individual sleepy cues. If you have concerns about your baby's sleep, feeding, or development, consult your pediatrician or a certified pediatric sleep specialist.
-  </div>`;
+  document.getElementById('sciW').innerHTML = '';
 
   // Save to history
   saveHist({
@@ -1110,9 +1118,21 @@ function predict(){
   setTimeout(()=>{pr.classList.add('on');setTimeout(()=>pr.scrollIntoView({behavior:'smooth',block:'start'}),80);},40);
 }
 
+const TIPS={
+  aasm:`<strong>AASM</strong> stands for the American Academy of Sleep Medicine. In 2016, they reviewed 864 published studies and issued consensus guidelines on how much sleep children need at each age. These are the gold-standard totals Nappy uses for the sleep goal bar. The guidelines were also endorsed by the American Academy of Pediatrics (AAP).`,
+  ww:`An <strong>awake window</strong> is the amount of time your baby can comfortably stay awake between sleep periods. Too short = not tired enough to fall asleep. Too long = overtired, cortisol spikes, harder to settle. Nappy calculates the sweet spot for your baby's age based on guidance from board-certified pediatric sleep practitioners.`,
+  napwin:`The <strong>nap window</strong> is the range of time when your baby is most likely to fall asleep easily — after enough sleep pressure has built but before they become overtired. Aim to start your wind-down routine about 10 minutes before the window opens.`,
+  sleepgoal:`The <strong>sleep goal</strong> is the total 24-hour sleep target for your baby's age, based on AASM/AAP consensus guidelines. It includes overnight sleep plus all daytime naps combined. The progress bar shows how close today's plan gets to that target.`
+};
+function showTip(key){
+  const t=TIPS[key];if(!t)return;
+  document.getElementById('tipTitle').textContent={aasm:'What is AASM?',ww:'What is an awake window?',napwin:'What is a nap window?',sleepgoal:'About the sleep goal'}[key]||'';
+  document.getElementById('tipBody').innerHTML=t;
+  document.getElementById('tipbox').classList.add('on');
+}
+function hideTip(){document.getElementById('tipbox').classList.remove('on');}
 function toggleWWInfo(){
-  const b=document.getElementById('wwInfoBox');
-  b.style.display=b.style.display==='none'?'block':'none';
+  showTip('ww');
 }
 function chip(lbl,val){return`<div class="now-chip"><span>${lbl}</span><strong>${val}</strong></div>`;}
 function setSP(cls,txt){const el=document.getElementById('nSPill');el.className=`status-pill ${cls}`;el.textContent=txt;}
