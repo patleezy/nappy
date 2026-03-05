@@ -12,6 +12,7 @@
 <meta name="keywords" content="baby nap planner, wake windows, nap schedule, infant sleep, newborn sleep tracker, nap window, baby sleep app"/>
 <meta name="author" content="Nappy"/>
 <meta name="theme-color" content="#FAF7F2"/>
+<meta name="color-scheme" content="light dark"/>
 <link rel="canonical" href="https://nappy-beta.vercel.app/"/>
 
 <!-- ═══════════════════════════════════════
@@ -59,6 +60,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
+  color-scheme: light dark;
   --bg:#FAF7F2;--card:#FFF;--text:#4A3828;--muted:#8A7260;
   --border:#E8DDD0;--inp:#F5F0E8;
   --rose:#E5967A;--rose-bg:#FEF0EA;--rose-lt:#F4CABB;
@@ -561,7 +563,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('nNS').value=`${hh}:${mm}`;
   updON(); updSlider(document.getElementById('ageSl'));
   startClock();
-  if(localStorage.getItem('nappy_dark')==='1') applyDark(true);
+  const savedDark = localStorage.getItem('nappy_dark');
+  if(savedDark === '1') applyDark(true);
+  else if(savedDark === null && window.matchMedia('(prefers-color-scheme: dark)').matches) applyDark(true);
   renderHist();
   // stepper hold-to-reset
   let ht;
