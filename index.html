@@ -409,9 +409,9 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <div class="hint-text">Recalculates remaining naps</div>
       </div>
       <div>
-        <label class="fl">Next nap is #</label>
+        <label class="fl">Starting from nap #</label>
         <input class="inp" id="nextNapNum" type="number" min="1" max="6" value="1" style="text-align:center"/>
-        <div class="hint-text">Which nap comes next today</div>
+        <div class="hint-text">1 = planning from the start · 2 = first nap already done · etc.</div>
       </div>
     </div>
   </div>
@@ -468,11 +468,12 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="g2" style="margin-bottom:12px">
       <div>
-        <label class="fl">Last wake / nap end</label>
+        <label class="fl">Last woke up at <span id="wwInfo" onclick="toggleWWInfo()" style="cursor:pointer;background:var(--border);border-radius:50%;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;vertical-align:middle;margin-left:3px">?</span></label>
+        <div id="wwInfoBox" style="display:none;font-size:.72rem;background:var(--blue-bg);border-radius:9px;padding:8px 10px;margin-bottom:7px;color:var(--text);line-height:1.5"><strong style="color:var(--blue)">What's an awake window?</strong> It's the time your baby can comfortably stay awake between naps. Too short = won't fall asleep. Too long = overtired and cranky. Nappy calculates the sweet spot for your baby's age automatically.</div>
         <input class="inp" id="nLW" type="time"/>
       </div>
       <div>
-        <label class="fl">This would be nap #</label>
+        <label class="fl">Which nap is this?</label>
         <input class="inp" id="nNN" type="number" min="1" max="6" value="1" style="text-align:center"/>
       </div>
     </div>
@@ -591,6 +592,12 @@ function tab(n){
     document.getElementById('p'+i).classList.toggle('on',i===n);
   }
   if(n===2) renderHist();
+  if(n===1) tryAutoPredict();
+}
+function tryAutoPredict(){
+  // Auto-run predict if age is set (nLW is pre-filled from init)
+  const age = parseInt(document.getElementById('nAge').value);
+  if(age > 0) predict();
 }
 
 // ─────────────────────────────────────
@@ -689,6 +696,24 @@ function onAge(sl){
   const v=parseInt(sl.value);
   document.getElementById('aU').textContent=am==='weeks'?(v===1?'week old':'weeks old'):(v===1?'month old':'months old');
   updSlider(sl);
+  updBedDefault(v, am);
+}
+function updBedDefault(v, mode){
+  const wks = mode==='weeks' ? v : Math.round(v*4.33);
+  const mo = wks/4.33;
+  // Bedtime gets earlier as baby gets older and nap count drops
+  // Newborns: 8–9pm (sleep pressure builds slowly, day/night confusion)
+  // 3–5mo: 7:30–8pm
+  // 6mo+: 7–7:30pm
+  // 18mo+: 7pm
+  let bed = '19:30';
+  if(wks < 8)       bed = '20:30';
+  else if(wks < 12) bed = '20:00';
+  else if(mo < 5)   bed = '19:45';
+  else if(mo < 6)   bed = '19:30';
+  else if(mo < 18)  bed = '19:15';
+  else              bed = '19:00';
+  document.getElementById('bedGoal').value = bed;
 }
 function updSlider(sl){sl.style.setProperty('--pct',((sl.value-sl.min)/(sl.max-sl.min)*100)+'%');}
 
@@ -876,7 +901,7 @@ function calc(isRecalc){
       ${nap.budgetAdjusted?`<div style="font-size:.69rem;color:var(--amber);background:var(--amber-bg);border-radius:8px;padding:4px 8px;margin-bottom:6px">⚖️ Shortened — earlier nap(s) banked extra sleep today</div>`:''}
       <div class="lgbdg" id="lgb${nap.i}"></div>
       <div class="nb-acts">
-        <button class="nb-act act-log" onclick="togLog(${nap.i})">📝 Log actual</button>
+        ${(st==='past'||st==='now'||st==='window'||st==='overdue')?`<button class="nb-act act-log" onclick="togLog(${nap.i})">📝 Log actual</button>`:''}
         <button class="nb-act act-rem" id="remB${nap.i}" onclick="setNapRem(${nap.i},${nap.st})">🔔 Remind me</button>
       </div>
       <div class="lf" id="lf${nap.i}">
@@ -1069,6 +1094,10 @@ function predict(){
   setTimeout(()=>{pr.classList.add('on');setTimeout(()=>pr.scrollIntoView({behavior:'smooth',block:'start'}),80);},40);
 }
 
+function toggleWWInfo(){
+  const b=document.getElementById('wwInfoBox');
+  b.style.display=b.style.display==='none'?'block':'none';
+}
 function chip(lbl,val){return`<div class="now-chip"><span>${lbl}</span><strong>${val}</strong></div>`;}
 function setSP(cls,txt){const el=document.getElementById('nSPill');el.className=`status-pill ${cls}`;el.textContent=txt;}
 function detHTML(d,napN,napEndM,aw){
