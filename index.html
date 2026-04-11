@@ -128,6 +128,8 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);tran
 /* INPUTS */
 .fl{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
 .inp{width:100%;border:2px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:16px;font-family:'Nunito',sans-serif;color:var(--text);background:var(--inp);outline:none;transition:border-color .2s;-webkit-appearance:none}
+input[type=time],input[type=date]{color-scheme:light;accent-color:var(--rose)}
+[data-theme=dark] input[type=time],[data-theme=dark] input[type=date]{color-scheme:dark}
 .inp:focus{border-color:var(--rose)}
 .inp::placeholder{color:#B0A090}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -299,6 +301,17 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .rem-cancel{background:var(--amber-bg);color:var(--amber)}
 .rem-cancel:hover{background:var(--amber-lt)}
 .rem-status{font-size:.72rem;color:var(--muted);text-align:center}
+/* Quick actions */
+.qa-bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.qa-btn{flex:1;min-width:0;border:none;border-radius:10px;padding:9px 6px;font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .18s;text-align:center;background:var(--inp);color:var(--text);border:1.5px solid var(--border)}
+.qa-btn:hover{border-color:var(--rose);background:var(--rose-bg);color:var(--rose)}
+.qa-btn:active{transform:scale(.97)}
+.qa-section-lbl{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;margin-top:12px}
+.copy-pill{display:flex;align-items:center;gap:8px;background:var(--green-bg);border-radius:10px;padding:9px 12px;margin-top:8px;cursor:pointer;transition:all .18s;border:1.5px solid transparent}
+.copy-pill:hover{border-color:var(--green);background:var(--green-lt)}
+.copy-pill-icon{font-size:1rem;flex-shrink:0}
+.copy-pill-text{font-size:.78rem;font-weight:700;color:var(--green);flex:1}
+.copy-pill-sub{font-size:.68rem;color:var(--muted)}
 
 /* HISTORY */
 .hx-empty{text-align:center;padding:36px 20px;color:var(--muted);font-size:.88rem}
@@ -497,6 +510,14 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="status-pill" id="nSPill"></div>
     <div class="card fu d1" id="nDetail"></div>
+    <!-- Copy nap time quick action -->
+    <div class="copy-pill fu d2" onclick="copyNapTime()" id="copyNapPill" style="display:none">
+      <div class="copy-pill-icon">📋</div>
+      <div>
+        <div class="copy-pill-text">Copy nap time</div>
+        <div class="copy-pill-sub" id="copyNapSub">Tap to copy for partner or nanny</div>
+      </div>
+    </div>
     <div class="card fu d2" style="padding:16px;text-align:center" id="nRemCard">
       <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:9px">Set a Reminder</div>
       <div class="rem-btns">
@@ -610,6 +631,18 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div class="card fu d2">
       <div class="ctitle">🗓️ Full Day Schedule</div>
       <div id="tlC"></div>
+    </div>
+    <!-- Quick adjust actions -->
+    <div class="card fu d3" id="qaCard" style="padding:14px 16px">
+      <div class="qa-section-lbl">Adjust for today</div>
+      <div class="qa-bar">
+        <button class="qa-btn" onclick="qaWakeEarly()">⏰ Woke 30 min early</button>
+        <button class="qa-btn" onclick="qaWakeLate()">😴 Woke 30 min late</button>
+      </div>
+      <div class="qa-bar">
+        <button class="qa-btn" onclick="qaNapShort()">📉 Nap ran short</button>
+        <button class="qa-btn" onclick="qaNapLong()">📈 Nap ran long</button>
+      </div>
     </div>
     <div id="tipW" class="fu d3"></div>
     <div id="sciW"></div>
@@ -765,17 +798,21 @@ function showNotifFallback(){
   document.body.appendChild(box);
 }
 function copyNapTime(){
-  // Copy next upcoming nap window open time to clipboard
   let msg='No upcoming nap found';
-  if(typeof plan!=='undefined'&&plan.length){
-    const next=plan.find(n=>napSt(n)!=='past');
-    if(next) msg=`Next nap window: ${fmt(next.ws)} – ${fmt(next.we)} (put down around ${fmt(next.st)})`;
-  } else if(typeof nowInfo!=='undefined'&&nowInfo){
+  if(typeof nowInfo!=='undefined'&&nowInfo){
     msg=nowInfo.sleeping
-      ?`Wake baby by: ${fmt(nowInfo.wakeM)}`
-      :`Nap window: ${fmt(nowInfo.wsM)} – ${fmt(nowInfo.weM)}`;
+      ?`Nappy: Wake baby by ${fmt(nowInfo.wakeM)} (nap started ${fmt(nowInfo.nsM)})`
+      :`Nappy: Nap window ${fmt(nowInfo.wsM)}–${fmt(nowInfo.weM)} · put down around ${fmt(nowInfo.idealM||nowInfo.wsM)}`;
+  } else if(typeof plan!=='undefined'&&plan.length){
+    const next=plan.find(n=>napSt(n)!=='past');
+    if(next) msg=`Nappy: Nap window ${fmt(next.ws)}–${fmt(next.we)} · put down around ${fmt(next.st)}`;
   }
-  navigator.clipboard.writeText(msg).then(()=>toast('Copied! Set an alarm in Clock app ⏰')).catch(()=>toast(msg));
+  navigator.clipboard.writeText(msg).then(()=>toast('Copied to clipboard ✓')).catch(()=>toast(msg));
+}
+function showCopyPill(msg){
+  const p=document.getElementById('copyNapPill');
+  const s=document.getElementById('copyNapSub');
+  if(p&&s){p.style.display='flex';s.textContent=msg;}
 }
 function fireN(title,body){
   if(Notification.permission==='granted') new Notification(title,{body});
@@ -1275,6 +1312,7 @@ function predict(){
     setSP('sp-sleep','😴 Sleeping now — tracking progress');
 
     document.getElementById('nDetail').innerHTML=detHTML(d,napN,wakeM,aw);
+    showCopyPill(`Wake baby by ${fmt(wakeM)}`);
     startCD(()=>{
       const r=Math.max(0,wakeM-nowM());
       document.getElementById('nCD').textContent=r>0?durStr(r):'Wake up!';
@@ -1310,6 +1348,7 @@ function predict(){
       chip('Nap window opens',fmt(wsM))+chip('Ideal put-down',fmt(idealM))+chip('Nap window closes',fmt(weM));
 
     document.getElementById('nDetail').innerHTML=detHTML(d,napN,napEndM,aw);
+    showCopyPill(`Nap window ${fmt(wsM)}–${fmt(weM)}`);
     startCD(()=>{
       const n=nowM();
       if(n>weM){document.getElementById('nCD').textContent=durStr(n-weM)+' ago';document.getElementById('nCD').className='now-cd urgent';}
@@ -1603,6 +1642,53 @@ function doEmail(){
   body+=`or a certified pediatric sleep specialist with any concerns.${n2}${n2}`;
   body+=`Generated with Nappy - nappy.digital`;
   window.location.href=`mailto:?subject=${sub}&body=${encodeURIComponent(body)}`;toast('Opening email 📧');
+}
+
+// ─────────────────────────────────────
+// QUICK ADJUST — Plan Day
+// ─────────────────────────────────────
+function qaAdjustWake(deltaMin){
+  const el=document.getElementById('mornWake');
+  if(!el.value) return toast('Set a wake-up time first');
+  const[h,m]=el.value.split(':').map(Number);
+  const newM=((h*60+m+deltaMin)+1440)%1440;
+  el.value=`${Math.floor(newM/60).toString().padStart(2,'0')}:${(newM%60).toString().padStart(2,'0')}`;
+  updON(); calc();
+  toast(deltaMin<0?`Wake-up moved ${Math.abs(deltaMin)} min earlier ⏰`:`Wake-up moved ${deltaMin} min later 😴`);
+}
+function qaWakeEarly(){qaAdjustWake(-30);}
+function qaWakeLate(){qaAdjustWake(30);}
+function qaNapShort(){
+  const napNum=parseInt(document.getElementById('nextNapNum').value)||1;
+  if(napNum<=1){toast('Set "Starting from nap #" > 1 first');return;}
+  const prev=napNum-1;
+  const d=getSleep(am==='weeks'?parseInt(document.getElementById('ageSl').value):Math.round(parseInt(document.getElementById('ageSl').value)*4.33));
+  const dMid=Math.round((d.d1+d.d2)/2);
+  if(loggedNaps[prev]){
+    loggedNaps[prev].dm=Math.max(10,loggedNaps[prev].dm-20);
+  } else {
+    const wakeM=toM(document.getElementById('mornWake').value||'07:00');
+    const st=wakeM+Math.round((d.ww1+d.ww2)/2);
+    const dm=Math.max(10,dMid-20);
+    loggedNaps[prev]={as:st,ae:st+dm,dm};
+  }
+  calc(true); toast(`Nap ${prev} logged as short — plan updated 📉`);
+}
+function qaNapLong(){
+  const napNum=parseInt(document.getElementById('nextNapNum').value)||1;
+  if(napNum<=1){toast('Set "Starting from nap #" > 1 first');return;}
+  const prev=napNum-1;
+  const d=getSleep(am==='weeks'?parseInt(document.getElementById('ageSl').value):Math.round(parseInt(document.getElementById('ageSl').value)*4.33));
+  const dMid=Math.round((d.d1+d.d2)/2);
+  if(loggedNaps[prev]){
+    loggedNaps[prev].dm=Math.min(d.d2,loggedNaps[prev].dm+20);
+  } else {
+    const wakeM=toM(document.getElementById('mornWake').value||'07:00');
+    const st=wakeM+Math.round((d.ww1+d.ww2)/2);
+    const dm=Math.min(d.d2,dMid+20);
+    loggedNaps[prev]={as:st,ae:st+dm,dm};
+  }
+  calc(true); toast(`Nap ${prev} logged as long — plan updated 📈`);
 }
 
 // ─────────────────────────────────────
