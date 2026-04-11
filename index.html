@@ -140,8 +140,8 @@ input[type=time],input[type=date]{color-scheme:light;accent-color:var(--rose)}
 .atgl button{flex:1;border:none;background:transparent;border-radius:7px;padding:7px 2px;font-family:'Nunito',sans-serif;font-size:.77rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s}
 .atgl button.on{background:var(--card);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.1)}
 .age-display{text-align:center;margin-bottom:10px}
-.stage-explainer{background:var(--rose-bg);border-radius:10px;padding:8px 12px;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
-.stage-chip{font-size:.7rem;font-weight:700;color:var(--rose);background:rgba(255,255,255,.6);border-radius:6px;padding:3px 8px;white-space:nowrap}
+.stage-explainer{background:var(--inp);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.stage-chip{font-size:.7rem;font-weight:700;color:var(--rose);background:var(--rose-bg);border-radius:6px;padding:3px 8px;white-space:nowrap}
 .stage-name{font-size:.72rem;color:var(--muted);text-align:center;margin-top:5px;font-style:italic}
 .transition-warn{background:var(--amber-bg);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:.73rem;color:var(--amber);line-height:1.5;display:none}
 .transition-warn.on{display:block}
@@ -807,7 +807,24 @@ function copyNapTime(){
     const next=plan.find(n=>napSt(n)!=='past');
     if(next) msg=`Nappy: Nap window ${fmt(next.ws)}–${fmt(next.we)} · put down around ${fmt(next.st)}`;
   }
-  navigator.clipboard.writeText(msg).then(()=>toast('Copied to clipboard ✓')).catch(()=>toast(msg));
+  // Use textarea fallback to avoid URL-encoding on iOS Safari
+  try {
+    if(navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(msg).then(()=>toast('Copied ✓')).catch(()=>fallbackCopy(msg));
+    } else {
+      fallbackCopy(msg);
+    }
+  } catch(e){ fallbackCopy(msg); }
+}
+function fallbackCopy(msg){
+  const ta=document.createElement('textarea');
+  ta.value=msg;
+  ta.style.cssText='position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try{ document.execCommand('copy'); toast('Copied ✓'); }
+  catch(e){ toast(msg); }
+  document.body.removeChild(ta);
 }
 function showCopyPill(msg){
   const p=document.getElementById('copyNapPill');
