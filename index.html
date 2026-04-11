@@ -370,6 +370,38 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .menu-divider{height:1px;background:var(--border);margin:4px 20px}
 /* About section inside menu */
 .about-block{padding:16px 20px 20px}
+/* Guide & Changelog sheet */
+.guide-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:7500;align-items:flex-end;justify-content:center}
+.guide-sheet.on{display:flex}
+.guide-inner{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom,20px)}
+@media(min-width:600px){
+  .guide-sheet{align-items:flex-start;justify-content:flex-end;padding-top:0}
+  .guide-inner{border-radius:0;width:360px;max-width:360px;height:100vh;max-height:100vh}
+}
+.guide-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0}
+.guide-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.2rem;font-weight:600;color:var(--text)}
+.guide-close{background:var(--inp);border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:.9rem;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.guide-tabs{display:flex;background:var(--inp);border-radius:10px;padding:3px;gap:2px;margin:14px 20px 0}
+.guide-tab{flex:1;border:none;background:transparent;border-radius:7px;padding:7px 4px;font-family:'Nunito',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s}
+.guide-tab.on{background:var(--card);color:var(--text);box-shadow:0 1px 5px rgba(0,0,0,.1)}
+.guide-panel{display:none;padding:16px 20px 20px}
+.guide-panel.on{display:block}
+/* How to use */
+.guide-step{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
+.guide-step-num{width:26px;height:26px;border-radius:50%;background:var(--rose-bg);color:var(--rose);font-size:.78rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.guide-step-text{font-size:.8rem;color:var(--text);line-height:1.6}
+.guide-step-text strong{color:var(--text)}
+.guide-step-text .muted{color:var(--muted);font-size:.74rem}
+.guide-section-title{font-size:.65rem;font-weight:800;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin:18px 0 10px}
+/* Changelog */
+.cl-entry{padding:12px 0;border-bottom:1px solid var(--border)}
+.cl-entry:last-child{border-bottom:none}
+.cl-date{font-size:.65rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.cl-items{font-size:.78rem;color:var(--text);line-height:1.7}
+.cl-tag{display:inline-block;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;vertical-align:middle}
+.cl-tag.new{background:var(--green-bg);color:var(--green)}
+.cl-tag.fix{background:var(--blue-bg);color:var(--blue)}
+.cl-tag.improve{background:var(--purple-bg);color:var(--purple)}
 .about-text{font-size:.8rem;color:var(--text);line-height:1.7}
 .about-text p{margin:0 0 10px}
 .about-text p:last-child{margin:0}
@@ -1329,6 +1361,26 @@ function showInstallInstructions(){
     s.style.display='flex';
   },200);
 }
+function openGuide(tab){
+  closeMenu();
+  setTimeout(()=>{
+    document.getElementById('guideSheet').classList.add('on');
+    guideTab(tab||'how');
+  }, 200);
+}
+function closeGuide(){
+  document.getElementById('guideSheet').classList.remove('on');
+}
+function guideOverlayClick(e){
+  if(e.target===document.getElementById('guideSheet')) closeGuide();
+}
+function guideTab(t){
+  ['how','updates'].forEach(k=>{
+    document.getElementById('gt'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on',k===t);
+    document.getElementById('gp'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on',k===t);
+  });
+  document.getElementById('guideTitle').textContent = t==='how' ? 'How to Use Nappy' : "What's New";
+}
 function closeInstallSheet(){
   document.getElementById('installSheet').style.display='none';
 }
@@ -1602,6 +1654,29 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
 
     <div class="menu-divider"></div>
 
+    <!-- Guide & Updates -->
+    <div class="menu-section">
+      <div class="menu-label">Learn</div>
+      <div class="menu-row" onclick="openGuide('how')">
+        <div class="menu-icon">📖</div>
+        <div class="menu-rowtext">
+          <div class="menu-rowtitle">How to Use Nappy</div>
+          <div class="menu-rowsub">Quick guide to getting the most out of the app</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-row" onclick="openGuide('updates')">
+        <div class="menu-icon">✨</div>
+        <div class="menu-rowtext">
+          <div class="menu-rowtitle">What's New</div>
+          <div class="menu-rowsub">Latest updates and improvements</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="menu-divider"></div>
+
     <!-- About -->
     <div class="menu-section">
       <div class="menu-label">About Nappy <span class="about-beta">BETA</span></div>
@@ -1649,6 +1724,128 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
       2. Tap <strong>Add to Home screen</strong> or <strong>Install app</strong>
     </div>
     <button onclick="closeInstallSheet()" style="width:100%;background:var(--rose);color:#fff;border:none;border-radius:999px;padding:13px;font-size:.88rem;font-weight:700;cursor:pointer">Got it</button>
+  </div>
+</div>
+
+<!-- ══ GUIDE & UPDATES SHEET ══ -->
+<div class="guide-sheet" id="guideSheet" onclick="guideOverlayClick(event)">
+  <div class="guide-inner">
+    <div class="guide-header">
+      <div class="guide-title" id="guideTitle">How to Use Nappy</div>
+      <button class="guide-close" onclick="closeGuide()">✕</button>
+    </div>
+    <div class="guide-tabs">
+      <button class="guide-tab on" id="gtHow" onclick="guideTab('how')">📖 How to Use</button>
+      <button class="guide-tab" id="gtUpdates" onclick="guideTab('updates')">✨ What's New</button>
+    </div>
+
+    <!-- HOW TO USE -->
+    <div class="guide-panel on" id="gpHow">
+      <div class="guide-section-title">The three tabs</div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">⚡</div>
+        <div class="guide-step-text">
+          <strong>Right Now</strong> — your live nap companion. Enter when baby last woke up and get an instant countdown to the next nap window. If baby is sleeping, switch to "Sleeping now" to track how long they've been down and when to wake them.
+          <div class="muted">Best for: mid-day quick checks, reminders, sharing nap times with a partner.</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">📋</div>
+        <div class="guide-step-text">
+          <strong>Plan Day</strong> — your full-day schedule builder. Enter baby's age, last night's sleep, and wake-up time to get a complete plan with nap windows, durations, and a sleep budget for the day.
+          <div class="muted">Best for: morning planning, sharing the schedule with a nanny or caregiver.</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">📅</div>
+        <div class="guide-step-text">
+          <strong>This Week</strong> — your sleep history. Every plan you build is saved here automatically. See overnight, daytime, and total sleep at a glance against the age-appropriate goal.
+          <div class="muted">Data is saved privately on your device — nothing is sent to a server.</div>
+        </div>
+      </div>
+
+      <div class="guide-section-title">Key concepts</div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">i</div>
+        <div class="guide-step-text">
+          <strong>Awake window</strong> — the amount of time your baby can comfortably stay awake between sleep periods. Too short = not tired enough. Too long = overtired and harder to settle. Nappy calculates the sweet spot for your baby's exact age.
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">i</div>
+        <div class="guide-step-text">
+          <strong>Nap window</strong> — the range of time when your baby is most likely to fall asleep easily. Aim to start your wind-down routine about 10 minutes before the window opens.
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">i</div>
+        <div class="guide-step-text">
+          <strong>Sleep budget</strong> — if you log actual nap times on the Plan Day tab, Nappy adjusts remaining nap durations to hit the daily sleep goal. Nap ran short? Later naps get a little longer to compensate.
+        </div>
+      </div>
+
+      <div class="guide-section-title">Tips</div>
+      <div style="font-size:.78rem;color:var(--text);line-height:1.8">
+        🌙 Always follow your baby's sleepy cues — the schedule is a guide, not a rule.<br>
+        ⏰ Start your wind-down 10 min before the nap window opens.<br>
+        📱 Add Nappy to your Home Screen for reminders and a full app experience.<br>
+        🔄 If a nap runs short or long, log it in Plan Day to recalculate the rest of the day.
+      </div>
+    </div>
+
+    <!-- WHAT'S NEW -->
+    <div class="guide-panel" id="gpUpdates">
+      <div class="cl-entry">
+        <div class="cl-date">Apr 11, 2026</div>
+        <div class="cl-items">
+          <span class="cl-tag new">NEW</span> Stage explainer under age slider — shows nap count, awake window, and sleep goal live as you drag<br>
+          <span class="cl-tag new">NEW</span> Nap transition warnings — alerts when baby is approaching a 3→2 or 2→1 nap transition<br>
+          <span class="cl-tag new">NEW</span> Plan mode toggle — choose between planning from wake-up time or working backward from bedtime<br>
+          <span class="cl-tag new">NEW</span> Guide & What's New section — you're reading it!<br>
+          <span class="cl-tag improve">IMPROVED</span> Menu is now a side drawer on desktop<br>
+          <span class="cl-tag fix">FIX</span> Duplicate disclaimer removed
+        </div>
+      </div>
+      <div class="cl-entry">
+        <div class="cl-date">Apr 10, 2026</div>
+        <div class="cl-items">
+          <span class="cl-tag new">NEW</span> Hamburger menu with About, Reminders, Install, and Support sections<br>
+          <span class="cl-tag new">NEW</span> "Keep the Lights On" — Buy Me a Coffee support link<br>
+          <span class="cl-tag new">NEW</span> Add to Home Screen instructions for iOS and Android<br>
+          <span class="cl-tag fix">FIX</span> Large gap between content and footer removed<br>
+          <span class="cl-tag fix">FIX</span> iOS dark mode no longer shows app as brown
+        </div>
+      </div>
+      <div class="cl-entry">
+        <div class="cl-date">Mar 5, 2026</div>
+        <div class="cl-items">
+          <span class="cl-tag new">NEW</span> Sleep budget tracking — logs actual nap times and adjusts remaining nap durations<br>
+          <span class="cl-tag new">NEW</span> PWA manifest — Nappy is installable to your Home Screen<br>
+          <span class="cl-tag new">NEW</span> OG image for link previews<br>
+          <span class="cl-tag improve">IMPROVED</span> Email and TXT export formatting<br>
+          <span class="cl-tag improve">IMPROVED</span> Notification fallback for iOS Safari with clipboard copy<br>
+          <span class="cl-tag fix">FIX</span> "Sleeping now" removed from Plan Day tab — it's a schedule view, not a live tracker<br>
+          <span class="cl-tag fix">FIX</span> Nap status badges no longer show "Done" on future dates
+        </div>
+      </div>
+      <div class="cl-entry">
+        <div class="cl-date">Feb 25, 2026</div>
+        <div class="cl-items">
+          <span class="cl-tag new">NEW</span> Nappy launches — Right Now, Plan Day, and This Week tabs<br>
+          <span class="cl-tag new">NEW</span> Age-adaptive awake windows across 14 age bands (0–36 months)<br>
+          <span class="cl-tag new">NEW</span> Dark mode with OS preference detection<br>
+          <span class="cl-tag new">NEW</span> Sleep history saved on device<br>
+          <span class="cl-tag new">NEW</span> Export as JPG, PDF, TXT, and Email
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
