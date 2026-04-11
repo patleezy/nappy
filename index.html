@@ -138,6 +138,11 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);tran
 .atgl button{flex:1;border:none;background:transparent;border-radius:7px;padding:7px 2px;font-family:'Nunito',sans-serif;font-size:.77rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s}
 .atgl button.on{background:var(--card);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.1)}
 .age-display{text-align:center;margin-bottom:10px}
+.stage-explainer{background:var(--rose-bg);border-radius:10px;padding:8px 12px;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.stage-chip{font-size:.7rem;font-weight:700;color:var(--rose);background:rgba(255,255,255,.6);border-radius:6px;padding:3px 8px;white-space:nowrap}
+.stage-name{font-size:.72rem;color:var(--muted);text-align:center;margin-top:5px;font-style:italic}
+.transition-warn{background:var(--amber-bg);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:.73rem;color:var(--amber);line-height:1.5;display:none}
+.transition-warn.on{display:block}
 .age-pill{display:inline-block;background:var(--rose-lt);color:var(--text);font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;border-radius:14px;padding:4px 16px;min-width:60px}
 .age-unit{display:block;font-size:.68rem;color:var(--muted);margin-top:2px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
 .sl-row{display:flex;justify-content:space-between;font-size:.67rem;color:var(--muted);margin-bottom:5px}
@@ -152,6 +157,9 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .step-btn:hover{background:var(--rose-lt)}
 .step-btn:disabled{opacity:.3;cursor:not-allowed}
 .hint-text{font-size:.64rem;color:var(--muted);margin-top:4px}
+.mode-toggle{display:flex;background:var(--inp);border-radius:10px;padding:3px;gap:2px;margin-bottom:12px}
+.mode-btn{flex:1;border:none;background:transparent;border-radius:7px;padding:7px 4px;font-family:'Nunito',sans-serif;font-size:.73rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s;text-align:center}
+.mode-btn.on{background:var(--card);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.1)}
 
 /* OVERNIGHT PILL */
 .on-pill{display:flex;align-items:center;gap:9px;background:var(--purple-bg);border-radius:12px;padding:10px 12px;margin-top:12px}
@@ -492,6 +500,22 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="sl-row"><span id="slA">0 wks</span><span id="slB">16 wks</span></div>
     <input type="range" id="ageSl" min="0" max="16" value="8" oninput="onAge(this)"/>
+    <div class="stage-explainer" id="stageExp">
+      <span class="stage-chip" id="expNaps">—</span>
+      <span class="stage-chip" id="expWW">—</span>
+      <span class="stage-chip" id="expTotal">—</span>
+    </div>
+    <div class="stage-name" id="stageName"></div>
+    <div class="transition-warn" id="transWarn"></div>
+  </div>
+
+  <div class="sec">Plan mode</div>
+  <div class="card" style="padding:12px 14px">
+    <div class="mode-toggle">
+      <button class="mode-btn on" id="modeWake" onclick="setPlanMode('wake')">☀️ From wake-up time</button>
+      <button class="mode-btn" id="modeBed" onclick="setPlanMode('bed')">🌙 From bedtime</button>
+    </div>
+    <div id="modeHint" style="font-size:.72rem;color:var(--muted);text-align:center">Build the day forward from when baby woke up</div>
   </div>
 
   <div class="sec">Last night's sleep</div>
@@ -616,7 +640,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   const n=new Date(),hh=n.getHours().toString().padStart(2,'0'),mm=n.getMinutes().toString().padStart(2,'0');
   document.getElementById('nLW').value=`${hh}:${mm}`;
   document.getElementById('nNS').value=`${hh}:${mm}`;
-  updON(); updSlider(document.getElementById('ageSl'));
+  updON(); updSlider(document.getElementById('ageSl')); updStageExplainer(8,'weeks');
   startClock();
 
   const savedDark = localStorage.getItem('nappy_dark');
@@ -799,8 +823,8 @@ function setAM(m){
   const sl=document.getElementById('ageSl');
   document.getElementById('bW').classList.toggle('on',m==='weeks');
   document.getElementById('bM').classList.toggle('on',m==='months');
-  if(m==='weeks'){sl.min=0;sl.max=16;sl.value=8;document.getElementById('slA').textContent='0 wks';document.getElementById('slB').textContent='16 wks';document.getElementById('aN').textContent=8;document.getElementById('aU').textContent='weeks old';}
-  else{sl.min=4;sl.max=36;sl.value=6;document.getElementById('slA').textContent='4 mo';document.getElementById('slB').textContent='36 mo';document.getElementById('aN').textContent=6;document.getElementById('aU').textContent='months old';}
+  if(m==='weeks'){sl.min=0;sl.max=16;sl.value=8;document.getElementById('slA').textContent='0 wks';document.getElementById('slB').textContent='16 wks';document.getElementById('aN').textContent=8;document.getElementById('aU').textContent='weeks old';updStageExplainer(8,'weeks');}
+  else{sl.min=4;sl.max=36;sl.value=6;document.getElementById('slA').textContent='4 mo';document.getElementById('slB').textContent='36 mo';document.getElementById('aN').textContent=6;document.getElementById('aU').textContent='months old';updStageExplainer(6,'months');}
   updSlider(sl);
 }
 function onAge(sl){
@@ -809,6 +833,45 @@ function onAge(sl){
   document.getElementById('aU').textContent=am==='weeks'?(v===1?'week old':'weeks old'):(v===1?'month old':'months old');
   updSlider(sl);
   updBedDefault(v, am);
+  updStageExplainer(v, am);
+}
+function updStageExplainer(v, mode){
+  const wks = mode==='weeks' ? v : Math.round(v*4.33);
+  const d = getSleep(wks);
+  const ww1h = Math.floor(d.ww1/60), ww1m = d.ww1%60;
+  const ww2h = Math.floor(d.ww2/60), ww2m = d.ww2%60;
+  const fmtWW = m => m<60 ? `${m}m` : (m%60===0 ? `${Math.floor(m/60)}h` : `${Math.floor(m/60)}h ${m%60}m`);
+  document.getElementById('expNaps').textContent = `${d.n} nap${d.n!==1?'s':''}/day`;
+  document.getElementById('expWW').textContent = `${fmtWW(d.ww1)}–${fmtWW(d.ww2)} awake`;
+  document.getElementById('expTotal').textContent = `${d.tL} total sleep`;
+  document.getElementById('stageName').textContent = d.stage;
+  // Nap transition warnings
+  const mo = wks/4.33;
+  const warn = document.getElementById('transWarn');
+  let warnMsg = '';
+  if(mo >= 6.5 && mo < 9)   warnMsg = '⚠️ Many babies this age are approaching the 3→2 nap transition. Watch for nap resistance, shortened naps, or skipping the third nap 3+ days in a row as your signal.';
+  else if(mo >= 13 && mo < 18) warnMsg = '⚠️ The 2→1 nap transition typically happens between 15–18 months. Consistent refusal of one nap 3+ times a week is the clearest signal to transition.';
+  else if(mo >= 30 && mo < 36) warnMsg = '⚠️ Many toddlers this age are beginning to drop their last nap. Even a quiet rest period without sleep provides meaningful recovery for a developing brain.';
+  warn.textContent = warnMsg;
+  warn.classList.toggle('on', warnMsg.length > 0);
+}
+let planMode = 'wake'; // 'wake' or 'bed'
+function setPlanMode(m){
+  planMode = m;
+  document.getElementById('modeWake').classList.toggle('on', m==='wake');
+  document.getElementById('modeBed').classList.toggle('on', m==='bed');
+  const hint = document.getElementById('modeHint');
+  if(m==='wake'){
+    hint.textContent = 'Build the day forward from when baby woke up';
+    document.querySelector('label[for="mornWake"], .fl').textContent;
+    // Show wake, show bedtime goal as target
+    document.getElementById('mornWake').closest('.g2').style.opacity='1';
+    document.getElementById('mornWake').disabled=false;
+  } else {
+    hint.textContent = 'Work backward from bedtime — Nappy calculates ideal nap times to hit it';
+    document.getElementById('mornWake').closest('.g2').style.opacity='1';
+    document.getElementById('mornWake').disabled=false;
+  }
 }
 function updBedDefault(v, mode){
   const wks = mode==='weeks' ? v : Math.round(v*4.33);
@@ -955,6 +1018,14 @@ function calc(isRecalc){
   const now  = nowM();
 
   document.getElementById('stgBdg').textContent = `${d.stage} · ${al}`;
+  // Nap transition check — warn if override conflicts with age recommendation
+  if(napOvr !== null && napOvr !== d.n){
+    const diff = napOvr - d.n;
+    const msg = diff > 0
+      ? `ℹ️ You've set ${napOvr} naps — the typical recommendation for this age is ${d.n}. This is fine if your baby hasn't transitioned yet.`
+      : `ℹ️ You've set ${napOvr} nap${napOvr!==1?'s':''} — the typical recommendation for this age is ${d.n}. Watch for overtiredness if the transition is recent.`;
+    document.getElementById('stgBdg').title = msg;
+  }
   document.getElementById('resHL').innerHTML    = `${babyN?`<em style="font-style:italic;color:var(--rose)">${san(name)}</em>'s`:"Today's"} full nap plan`;
   document.getElementById('pbV').textContent    = durStr(totM);
   document.getElementById('pbS').innerHTML = `<span onclick="showTip('aasm')" style="cursor:pointer">AASM goal <span class='iico'>i</span></span>: ${d.tL} · ${durStr(onM)} overnight + ${durStr(dayM)} daytime`;
@@ -1540,7 +1611,7 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
         <p>Parents need rest. Not another subscription.</p>
         <p>I'm Patrick, and I built Nappy because managing a baby's sleep schedule is hard enough without paying for an app to tell you when to put them down. Nappy is free, science-backed, and built with one goal: help you and your baby get more sleep.</p>
         <p>It's currently in beta and a work in progress — but I'm actively improving it. If something feels off or you have a suggestion, I'd love to hear from you.</p>
-        <p><a href="mailto:hello@nappy.digital?subject=Nappy Feedback" style="color:var(--rose);font-weight:700;text-decoration:none">hello@nappy.digital</a></p>
+        <p><a href="/cdn-cgi/l/email-protection#bbd3ded7d7d4fbd5dacbcbc295dfd2dcd2cfdad784c8ced9d1ded8cf86f5dacbcbc29bfddededfd9dad8d0" style="color:var(--rose);font-weight:700;text-decoration:none"><span class="__cf_email__" data-cfemail="2048454c4c4f604e415050590e4449474954414c">[email&#160;protected]</span></a></p>
         <p class="about-sig">— Patrick</p>
       </div>
     </div>
@@ -1554,7 +1625,7 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
     <div class="menu-bmc">
       <div class="menu-bmc-title">☕ Keep the Lights On</div>
       <div class="menu-bmc-sub">Nappy is free. If it's helped you survive a nap transition, treating us to coffee helps keep it running and improving.</div>
-      <a class="bmc-btn" href="https://buymeacoffee.com/patleeazy" target="_blank" rel="noopener">Treat us to coffee ☕</a>
+      <a class="bmc-btn" href="https://buymeacoffee.com/patleezy" target="_blank" rel="noopener">Treat us to coffee ☕</a>
     </div>
 
 
