@@ -327,6 +327,19 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .hx-stat{background:var(--inp);border-radius:9px;padding:6px 9px;flex:1;min-width:72px;text-align:center}
 .hx-stat span{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:1px}
 .hx-stat strong{font-size:.85rem;font-weight:700}
+.hx-summary{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--sh);margin-bottom:14px}
+.hx-sum-title{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px}
+.hx-sum-kpis{display:flex;gap:7px;margin-bottom:12px}
+.hx-sum-kpi{flex:1;background:var(--inp);border-radius:9px;padding:8px 6px;text-align:center}
+.hx-sum-kpi span{display:block;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px}
+.hx-sum-kpi strong{font-size:.9rem;font-weight:700;font-family:'Cormorant Garamond',serif}
+.hx-chart{display:flex;align-items:flex-end;gap:3px;height:48px}
+.hx-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%}
+.hx-bar{width:100%;border-radius:3px 3px 0 0;min-height:3px;transition:height .4s ease}
+.hx-bar.grn{background:var(--green)}
+.hx-bar.amb{background:var(--amber)}
+.hx-bar.rst{background:var(--rose)}
+.hx-bar-lbl{font-size:.52rem;color:var(--muted);line-height:1}
 
 /* SHARE CARD */
 #shareCard{position:fixed;left:-9999px;top:0;width:460px;background:#FAF7F2;font-family:'Nunito',sans-serif;padding:28px;border-radius:22px}
@@ -1505,11 +1518,32 @@ function clearHist(){if(!confirm('Clear all history?'))return;localStorage.remov
 function renderHist(){
   const hist=getHist(),el=document.getElementById('histEl');
   if(!hist.length){el.innerHTML=`<div class="hx-empty"><div class="ei">📋</div>No history yet. Build your first nap plan to save it here.</div>`;return;}
-  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],mos=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  el.innerHTML=hist.map((h,i)=>{
+  const dShort=['Su','Mo','Tu','We','Th','Fr','Sa'],dLong=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],mos=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function gMin(g){const m=(g||'').match(/(\d+)[–\-]/);return m?parseInt(m[1])*60:720;}
+  // Summary stats
+  const avgTot=Math.round(hist.reduce((s,h)=>s+h.totM,0)/hist.length);
+  const avgNaps=(hist.reduce((s,h)=>s+h.napCount,0)/hist.length).toFixed(1);
+  const goalHit=hist.filter(h=>h.totM>=gMin(h.goal)).length;
+  const maxM=Math.max(...hist.map(h=>Math.max(h.totM,gMin(h.goal))));
+  const bars=[...hist].reverse().map(h=>{
+    const gm=gMin(h.goal),hPct=Math.min(100,Math.round(h.totM/maxM*100));
+    const cls=h.totM>=gm?'grn':h.totM>=gm-30?'amb':'rst';
+    const lbl=dShort[new Date(h.date+'T12:00:00').getDay()];
+    return`<div class="hx-bar-wrap"><div class="hx-bar ${cls}" style="height:${hPct}%"></div><div class="hx-bar-lbl">${lbl}</div></div>`;
+  }).join('');
+  const summary=`<div class="hx-summary fu">
+    <div class="hx-sum-title">Last ${hist.length} day${hist.length!==1?'s':''}</div>
+    <div class="hx-sum-kpis">
+      <div class="hx-sum-kpi"><span>Avg sleep</span><strong>${durStr(avgTot)}</strong></div>
+      <div class="hx-sum-kpi"><span>Avg naps</span><strong>${avgNaps}</strong></div>
+      <div class="hx-sum-kpi"><span>Goal hit</span><strong>${goalHit}/${hist.length}</strong></div>
+    </div>
+    <div class="hx-chart">${bars}</div>
+  </div>`;
+  const cards=hist.map((h,i)=>{
     const d=new Date(h.date+'T12:00:00');
-    const dl=`${days[d.getDay()]} ${mos[d.getMonth()]} ${d.getDate()}`;
-    const pct=Math.min(100,Math.round(h.totM/(h.goal?.includes('14')?840:720)*100));
+    const dl=`${dLong[d.getDay()]} ${mos[d.getMonth()]} ${d.getDate()}`;
+    const pct=Math.min(100,Math.round(h.totM/gMin(h.goal)*100));
     return`<div class="hxcard fu" style="animation-delay:${i*.04}s">
       <div class="hx-head">
         <div>
@@ -1533,6 +1567,7 @@ function renderHist(){
       </div>
     </div>`;
   }).join('');
+  el.innerHTML=summary+cards;
 }
 function delH(date){try{let h=JSON.parse(localStorage.getItem('nappy_h')||'[]');h=h.filter(x=>x.date!==date);localStorage.setItem('nappy_h',JSON.stringify(h));renderHist();toast('Entry removed');}catch(e){}}
 
@@ -1789,7 +1824,7 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
         <p>Parents need rest. Not another subscription.</p>
         <p>I'm Patrick, and I built Nappy because managing a baby's sleep schedule is hard enough without paying for an app to tell you when to put them down. Nappy is free, science-backed, and built with one goal: help you and your baby get more sleep.</p>
         <p>It's currently in beta and a work in progress — but I'm actively improving it. If something feels off or you have a suggestion, I'd love to hear from you.</p>
-        <p><a href="/cdn-cgi/l/email-protection#bbd3ded7d7d4fbd5dacbcbc295dfd2dcd2cfdad784c8ced9d1ded8cf86f5dacbcbc29bfddededfd9dad8d0" style="color:var(--rose);font-weight:700;text-decoration:none"><span class="__cf_email__" data-cfemail="2048454c4c4f604e415050590e4449474954414c">[email&#160;protected]</span></a></p>
+        <p><a href="mailto:hello@nappy.digital" style="color:var(--rose);font-weight:700;text-decoration:none">Say hello →</a></p>
         <p class="about-sig">— Patrick</p>
       </div>
     </div>
