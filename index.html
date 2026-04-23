@@ -1039,7 +1039,7 @@ function buildPlan(d, wakeM, bedM, lastNapEndStr, napNum, countOvr, loggedNapDur
 
   // Sleep budget: how much daytime sleep is still needed?
   const dayTarget = count * dMid;
-  const banked = Object.values(loggedNapDurations||{}).reduce((s,v)=>s+v, 0);
+  const banked = Object.values(loggedNapDurations||{}).reduce((s,v)=>s+v.dm, 0);
   let budgetLeft = Math.max(remaining * d.d1, dayTarget - banked);
 
   for(let i = 0; i < remaining; i++){
@@ -1108,7 +1108,7 @@ function calc(isRecalc){
   plan = buildPlan(d, wakeM, bedM, lastNE, napNum, napOvr, loggedNaps);
 
   const onM  = getON();
-  const bankedM = Object.values(loggedNaps).reduce((s,v)=>s+v, 0);
+  const bankedM = Object.values(loggedNaps).reduce((s,v)=>s+v.dm, 0);
   const dayM = bankedM + plan.reduce((s,n)=>s+n.dm, 0);
   const totM = onM + dayM;
   const pct  = Math.min(100, Math.round(totM / d.tot * 100));
