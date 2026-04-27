@@ -876,33 +876,33 @@ function getSleep(wks){
   //   Always follow your baby's individual cues — these are guides, not rules.
 
   // 0–4w  | CC: 30–60 min | Huckleberry: 30–90 min | → 30–60 min
-  if(wks<4)  return{ww1:30, ww2:60,  d1:20,d2:90,  n:6, bedBuf:60,  stage:'🌱 Newborn (0–4w)',  tot:960, tL:'14–17 hrs', tip:"Newborns have extremely short awake windows — often just time for a feed and diaper change before the next nap. No schedule needed yet. Simply respond to sleepy cues: eye rubbing, yawning, zoning out."};
+  if(wks<4)  return{ww1:30, ww2:60,  wws:[45], d1:20,d2:90,  n:6, bedBuf:60,  stage:'🌱 Newborn (0–4w)',  tot:960, tL:'14–17 hrs', tip:"Newborns have extremely short awake windows — often just time for a feed and diaper change before the next nap. No schedule needed yet. Simply respond to sleepy cues: eye rubbing, yawning, zoning out."};
   // 4–8w  | CC: 60–120 min (1–3mo band) | Huckleberry: 45–75 min | → 45–90 min
-  if(wks<8)  return{ww1:45, ww2:90,  d1:20,d2:90,  n:5, bedBuf:60,  stage:'🌱 Newborn (4–8w)',  tot:930, tL:'14–17 hrs', tip:"Sleep is still unpredictable. Short naps of 20–45 min are completely normal at this age. Cues matter more than the clock."};
+  if(wks<8)  return{ww1:45, ww2:90,  wws:[45, 75], d1:20,d2:90,  n:5, bedBuf:60,  stage:'🌱 Newborn (4–8w)',  tot:930, tL:'14–17 hrs', tip:"Sleep is still unpredictable. Short naps of 20–45 min are completely normal at this age. Cues matter more than the clock."};
   // 8–12w | CC: 60–120 min | Huckleberry: 60–120 min | → 60–105 min
-  if(wks<12) return{ww1:60, ww2:105, d1:30,d2:90,  n:5, bedBuf:60,  stage:'🌱 Newborn (8–12w)', tot:900, tL:'14–16 hrs', tip:"Awake windows are slowly lengthening. A loose rhythm may be emerging, but day-to-day variation is still completely normal."};
+  if(wks<12) return{ww1:60, ww2:105, wws:[60, 75, 90, 100, 105], d1:30,d2:90,  n:5, bedBuf:60,  stage:'🌱 Newborn (8–12w)', tot:900, tL:'14–16 hrs', tip:"Awake windows are slowly lengthening. A loose rhythm may be emerging, but day-to-day variation is still completely normal."};
   // 3mo   | CC: 75–150 min (3–4mo band) | Huckleberry: 60–120 min | → 75–120 min
-  if(mo<4)   return{ww1:75, ww2:120, d1:30,d2:90,  n:4, bedBuf:60,  stage:'🍃 3 months',         tot:870, tL:'14–16 hrs', tip:"The 4-month sleep regression is approaching. Circadian rhythms are maturing — a consistent pre-nap wind-down (dim lights, white noise) starts to help now."};
+  if(mo<4)   return{ww1:75, ww2:120, wws:[75, 95, 110, 115], d1:30,d2:90,  n:4, bedBuf:60,  stage:'🍃 3 months',         tot:870, tL:'14–16 hrs', tip:"The 4-month sleep regression is approaching. Circadian rhythms are maturing — a consistent pre-nap wind-down (dim lights, white noise) starts to help now."};
   // 4mo   | CC: 75–150 min | Huckleberry: 90–120 min | → 90–135 min
-  if(mo<5)   return{ww1:90, ww2:135, d1:30,d2:90,  n:4, bedBuf:60,  stage:'🌸 4 months',         tot:840, tL:'13–15 hrs', tip:"The 4-month regression disrupts many families as sleep cycles mature. Keep a dark room, consistent cues, and stay patient — it passes within a few weeks."};
+  if(mo<5)   return{ww1:90, ww2:135, wws:[90, 110, 130, 135], d1:30,d2:90,  n:4, bedBuf:60,  stage:'🌸 4 months',         tot:840, tL:'13–15 hrs', tip:"The 4-month regression disrupts many families as sleep cycles mature. Keep a dark room, consistent cues, and stay patient — it passes within a few weeks."};
   // 5mo   | CC: 120–240 min (5–7mo band) | Huckleberry: 90–150 min | → 105–150 min
-  if(mo<6)   return{ww1:105,ww2:150, d1:45,d2:120, n:3, bedBuf:90,  stage:'🌻 5 months',         tot:810, tL:'12–15 hrs', tip:"Three naps fits well at this age. Aim for the last nap to end by 4:30–5:00 pm so enough sleep pressure builds before bedtime."};
-  // 6mo   | CC: 120–240 min | Huckleberry: 120–150 min | → 120–165 min
-  if(mo<7)   return{ww1:120,ww2:165, d1:60,d2:120, n:3, bedBuf:90,  stage:'🌻 6 months',         tot:810, tL:'12–15 hrs', tip:"If naps are consistently short (under 45 min), try extending the awake window by 10–15 min before each nap."};
-  // 7–8mo | CC: 150–270 min (7–10mo band) | Huckleberry: 150–180 min | → 150–195 min
-  if(mo<9)   return{ww1:150,ww2:195, d1:60,d2:120, n:3, bedBuf:90,  stage:'🌿 7–8 months',       tot:780, tL:'12–14 hrs', tip:"Watch for the 3→2 nap transition: shortened naps, bedtime resistance, or skipping the third nap 3+ days in a row are clear signals."};
-  // 9mo   | CC: 150–270 min | Huckleberry: 165–210 min | → 165–225 min
-  if(mo<10)  return{ww1:165,ww2:225, d1:60,d2:120, n:2, bedBuf:120, stage:'🌾 9 months',         tot:750, tL:'12–14 hrs', tip:"Two naps at this stage. Keep total daytime sleep around 2.5–3.5 hours so there's enough sleep pressure for a smooth bedtime."};
-  // 10–11mo | CC: 180–360 min (10–12mo band) | Huckleberry: 180–225 min | → 180–240 min
-  if(mo<12)  return{ww1:180,ww2:240, d1:60,d2:120, n:2, bedBuf:120, stage:'🌾 10–11 months',     tot:750, tL:'12–14 hrs', tip:"AASM recommends 12–16 hrs total at this age. Protect nighttime sleep — too much daytime napping can fragment nights."};
-  // 12–13mo | Huckleberry: 180–255 min | Ferry: ~210–255 min | → 195–255 min
-  if(mo<14)  return{ww1:195,ww2:255, d1:60,d2:120, n:2, bedBuf:150, stage:'🌟 12–13 months',     tot:720, tL:'11–14 hrs', tip:"Some toddlers begin resisting the morning nap. Try pushing it 15 min later every few days rather than dropping it abruptly."};
-  // 14–17mo | Huckleberry: 240–300 min, transitioning to 1 nap | → 240–300 min
-  if(mo<18)  return{ww1:240,ww2:300, d1:60,d2:150, n:2, bedBuf:180, stage:'⭐ 14–17 months',     tot:720, tL:'11–14 hrs', tip:"The 2→1 nap transition typically happens between 15–18 months. Consistent refusal of one nap 3+ times a week is the clearest signal to transition."};
-  // 18–23mo | 1 nap, awake window ~5–6 hrs | → 300–360 min
-  if(mo<24)  return{ww1:300,ww2:360, d1:60,d2:180, n:1, bedBuf:240, stage:'✨ 18–23 months',     tot:690, tL:'11–14 hrs', tip:"One consolidated nap is the goal now. Aim for around midday and cap it at 2–2.5 hours to protect a 7:00–7:30 pm bedtime."};
-  // 24–36mo | awake window ~5–7 hrs | → 300–420 min
-  return       {ww1:300,ww2:420, d1:60,d2:120, n:1, bedBuf:300, stage:'🌙 2–3 year old',         tot:660, tL:'10–13 hrs', tip:"Naps may become inconsistent. Even a quiet rest period in a darkened room without actual sleep provides meaningful recovery for a toddler's developing brain."};
+  if(mo<6)   return{ww1:105,ww2:150, wws:[105, 130, 145], d1:45,d2:120, n:3, bedBuf:90,  stage:'🌻 5 months',         tot:810, tL:'12–15 hrs', tip:"Three naps fits well at this age. Aim for the last nap to end by 4:30–5:00 pm so enough sleep pressure builds before bedtime."};
+  // 6mo   | CC: 120–240 min | Huckleberry: 120–150 min | → 120–165 min (U-shaped: shortest morning, longest middle, shorter before bed)
+  if(mo<7)   return{ww1:120,ww2:165, wws:[120, 150, 140], d1:60,d2:120, n:3, bedBuf:90,  stage:'🌻 6 months',         tot:810, tL:'12–15 hrs', tip:"If naps are consistently short (under 45 min), try extending the awake window by 10–15 min before each nap."};
+  // 7–8mo | CC: 150–270 min (7–10mo band) | Huckleberry: 150–180 min | → 150–195 min (U-shaped: shorter morning, longer middle, shorter evening)
+  if(mo<9)   return{ww1:150,ww2:195, wws:[150, 175, 165], d1:60,d2:120, n:3, bedBuf:90,  stage:'🌿 7–8 months',       tot:780, tL:'12–14 hrs', tip:"Watch for the 3→2 nap transition: shortened naps, bedtime resistance, or skipping the third nap 3+ days in a row are clear signals."};
+  // 9mo   | CC: 150–270 min | Huckleberry: 165–210 min | → 165–225 min (U-shaped: shorter morning, longest afternoon)
+  if(mo<10)  return{ww1:165,ww2:225, wws:[165, 210], d1:60,d2:120, n:2, bedBuf:120, stage:'🌾 9 months',         tot:750, tL:'12–14 hrs', tip:"Two naps at this stage. Keep total daytime sleep around 2.5–3.5 hours so there's enough sleep pressure for a smooth bedtime."};
+  // 10–11mo | CC: 180–360 min (10–12mo band) | Huckleberry: 180–225 min | → 180–240 min (Transitioning: morning shorter, afternoon longest)
+  if(mo<12)  return{ww1:180,ww2:240, wws:[190, 230], d1:60,d2:120, n:2, bedBuf:120, stage:'🌾 10–11 months',     tot:750, tL:'12–14 hrs', tip:"AASM recommends 12–16 hrs total at this age. Protect nighttime sleep — too much daytime napping can fragment nights."};
+  // 12–13mo | Huckleberry: 180–255 min | Ferry: ~210–255 min | → 195–255 min (Transitioning: morning shorter, bedtime longest)
+  if(mo<14)  return{ww1:195,ww2:255, wws:[210, 245], d1:60,d2:120, n:2, bedBuf:150, stage:'🌟 12–13 months',     tot:720, tL:'11–14 hrs', tip:"Some toddlers begin resisting the morning nap. Try pushing it 15 min later every few days rather than dropping it abruptly."};
+  // 14–17mo | Huckleberry: 240–300 min, transitioning to 1 nap | → 240–300 min (Progressive: morning shorter, bedtime longest)
+  if(mo<18)  return{ww1:240,ww2:300, wws:[250, 295], d1:60,d2:150, n:2, bedBuf:180, stage:'⭐ 14–17 months',     tot:720, tL:'11–14 hrs', tip:"The 2→1 nap transition typically happens between 15–18 months. Consistent refusal of one nap 3+ times a week is the clearest signal to transition."};
+  // 18–23mo | 1 nap, awake window ~5–6 hrs | → 300–360 min (Single nap: longest window is before bed)
+  if(mo<24)  return{ww1:300,ww2:360, wws:[330], d1:60,d2:180, n:1, bedBuf:240, stage:'✨ 18–23 months',     tot:690, tL:'11–14 hrs', tip:"One consolidated nap is the goal now. Aim for around midday and cap it at 2–2.5 hours to protect a 7:00–7:30 pm bedtime."};
+  // 24–36mo | awake window ~5–7 hrs | → 300–420 min (Single nap: longest window is before bed)
+  return       {ww1:300,ww2:420, wws:[360], d1:60,d2:120, n:1, bedBuf:300, stage:'🌙 2–3 year old',         tot:660, tL:'10–13 hrs', tip:"Naps may become inconsistent. Even a quiet rest period in a darkened room without actual sleep provides meaningful recovery for a toddler's developing brain."};
 }
 
 // ─────────────────────────────────────
@@ -1026,6 +1026,7 @@ function buildPlan(d, wakeM, bedM, lastNapEndStr, napNum, countOvr, loggedNapDur
   let prevWake = wakeM;
   if(lastNapEndStr && toM(lastNapEndStr) > wakeM) prevWake = toM(lastNapEndStr);
 
+  const wws = d.wws || [Math.round((d.ww1 + d.ww2) / 2)];
   const wwMid = Math.round((d.ww1 + d.ww2) / 2);
   const dMid  = Math.round((d.d1  + d.d2)  / 2);
   const count = countOvr !== null ? countOvr : d.n;
@@ -1044,7 +1045,9 @@ function buildPlan(d, wakeM, bedM, lastNapEndStr, napNum, countOvr, loggedNapDur
 
   for(let i = 0; i < remaining; i++){
     const labelNum = napNum + i;
-    const st = prevWake + wwMid;
+    const napIndex = alreadyDone + i;
+    const napWw = wws[Math.min(napIndex, wws.length - 1)];
+    const st = prevWake + napWw;
     // Skip this nap if it would START too close to bed
     if(st >= bedM - bedBuf) break;
 
@@ -1060,7 +1063,7 @@ function buildPlan(d, wakeM, bedM, lastNapEndStr, napNum, countOvr, loggedNapDur
     result.push({
       i: labelNum, st, en, dm: napDm,
       ww1: d.ww1, ww2: d.ww2,
-      ws: prevWake + d.ww1, we: prevWake + d.ww2,
+      ws: prevWake + Math.max(d.ww1, napWw - 15), we: prevWake + Math.min(d.ww2, napWw + 15),
       risk, as: null, ae: null,
       budgetAdjusted: napDm < dMid - 5 // true if shortened due to banked sleep
     });
@@ -1631,12 +1634,24 @@ async function doPDF(){
   c.style.left='0';c.style.top='-9999px';c.style.zIndex='-1';
   await new Promise(r=>setTimeout(r,250));
   try{
+    if(typeof html2canvas !== 'function'){console.error('html2canvas not loaded');throw new Error('Image library missing');}
     const cv=await html2canvas(c,{scale:2,backgroundColor:'#FAF7F2'});c.style.left='-9999px';
-    const img=cv.toDataURL('image/jpeg',.95);const{jsPDF}=window.jspdf;
+    const img=cv.toDataURL('image/jpeg',.95);
+    if(!window.jspdf){console.error('jsPDF not loaded');throw new Error('PDF library missing');}
+    const{jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
     const pw=pdf.internal.pageSize.getWidth(),iw=pw-80,ih=(cv.height/cv.width)*iw;
     pdf.addImage(img,'JPEG',40,40,iw,ih);pdf.save('nappy.pdf');toast('PDF saved 📄');
-  }catch(e){toast('Export failed');}
+  }catch(e){
+    console.error('PDF export error:',e);
+    if(e.message.includes('library')){
+      toast('PDF libraries loading… try again in 2s');
+    }else if(e.message.includes('canvas')){
+      toast('Export failed — try JPG instead');
+    }else{
+      toast('Export failed');
+    }
+  }
   b.classList.remove('loading');b.innerHTML='<span class="si">📄</span>PDF';
 }
 function doTXT(){
