@@ -60,8 +60,8 @@
      FONTS + EXTERNAL LIBS
 ═══════════════════════════════════════ -->
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGE2rbL3ZVG2a6FcVQEpkpwkdBWhiETuQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" onerror="window._html2canvasErr=true"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" onerror="window._jspdfErr=true"></script>
 <style>
 :root{
   color-scheme: light dark;
@@ -1645,7 +1645,8 @@ async function doPDF(){
   }catch(e){
     console.error('PDF export error:',e);
     if(e.message.includes('library')){
-      toast('PDF libraries loading… try again in 2s');
+      const missing=window._html2canvasErr?'Image library':'PDF library';
+      toast(missing+' failed to load — check your connection and try again');
     }else if(e.message.includes('canvas')){
       toast('Export failed — try JPG instead');
     }else{
