@@ -538,6 +538,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <button class="rem-btn" id="rb10" onclick="setRem(10)">⏰ 10 min before</button>
         <button class="rem-btn" id="rb15" onclick="setRem(15)">⏰ 15 min before</button>
         <button class="rem-btn rem-cancel" id="rbCancel" onclick="cancelRem()" style="display:none">✕ Cancel</button>
+        <button class="rem-btn" id="rbSnooze" onclick="snoozeRem()" style="display:none">💤 Snooze 10 min</button>
       </div>
       <div class="rem-status" id="rSt"></div>
     </div>
@@ -707,7 +708,7 @@ function san(str){
 }
 let loggedNaps={}; // napIndex -> {as, ae, dm} for naps already done (napNum>1)
 let nAm='weeks', nowSleeping=false;
-let activeRem=null, nowInfo=null;
+let activeRem=null, nowInfo=null, activeRemFireM=null;
 let cdTimer=null;
 
 // ─────────────────────────────────────
@@ -1223,6 +1224,12 @@ function calc(isRecalc){
     h += `<div style="text-align:center;padding:14px;font-size:.82rem;color:var(--muted)">No remaining naps fit before bedtime. Consider an earlier bedtime tonight.</div>`;
   }
 
+  // Bedtime deadline warning: last nap ends within 15 min of the minimum buffer before bed
+  if(plan.length && plan[plan.length-1].risk==='late'){
+    const awake=bedM-plan[plan.length-1].en;
+    h+=`<div style="background:var(--rose-bg);border:1px solid var(--rose);border-radius:10px;padding:9px 12px;font-size:.76rem;color:var(--rose);margin:4px 0 6px">⚠️ Last nap ends only ${durStr(awake)} before bedtime — consider shortening it or starting it earlier to build enough sleep pressure.</div>`;
+  }
+
   h += ssb('🌙','Bedtime goal', fmt(bedM), 'Wind-down 15–20 min before', true);
 
   document.getElementById('tlC').innerHTML = h;
@@ -1499,13 +1506,32 @@ function setRem(minsBefore){
   ['rb5','rb10','rb15'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('on');});
   document.getElementById('rb'+minsBefore).classList.add('on');
   document.getElementById('rbCancel').style.display='inline-flex';
+  document.getElementById('rbSnooze').style.display='inline-flex';
+  activeRemFireM=fireM;
   document.getElementById('rSt').textContent=`⏰ Reminder set for ${fmt(fireM)}`;
   toast(`Reminder set for ${fmt(fireM)} ⏰`);
 }
+function snoozeRem(){
+  if(!activeRemFireM){toast('No active reminder');return;}
+  const newFireM=activeRemFireM+10;
+  const ms=(newFireM-nowM())*60*1000;
+  if(ms<0){toast('That time already passed');return;}
+  if(activeRem)clearTimeout(activeRem);
+  activeRem=setTimeout(()=>{
+    const msg=nowInfo&&nowInfo.sleeping?`Time to wake baby — snoozed reminder`:`Snoozed nap reminder`;
+    fireN('Nappy 🌙',msg);toast('🔔 Reminder fired!');
+    document.getElementById('rSt').textContent='✅ Sent!';
+  },Math.max(1000,ms));
+  activeRemFireM=newFireM;
+  document.getElementById('rSt').textContent=`⏰ Snoozed — reminder at ${fmt(newFireM)}`;
+  toast(`Snoozed 10 min → ${fmt(newFireM)} ⏰`);
+}
 function cancelRem(){
   if(activeRem){clearTimeout(activeRem);activeRem=null;}
+  activeRemFireM=null;
   ['rb5','rb10','rb15'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('on');});
   document.getElementById('rbCancel').style.display='none';
+  document.getElementById('rbSnooze').style.display='none';
   document.getElementById('rSt').textContent='';
   toast('Reminder cancelled');
 }
@@ -1527,6 +1553,9 @@ function renderHist(){
   const avgTot=Math.round(hist.reduce((s,h)=>s+h.totM,0)/hist.length);
   const avgNaps=(hist.reduce((s,h)=>s+h.napCount,0)/hist.length).toFixed(1);
   const goalHit=hist.filter(h=>h.totM>=gMin(h.goal)).length;
+  const debtM=Math.round(hist.reduce((s,h)=>s+(h.totM-gMin(h.goal)),0)/hist.length);
+  const debtCls=debtM>=0?'--green':debtM>=-30?'--amber':'--rose';
+  const debtLbl=debtM>=0?`+${durStr(debtM)} avg surplus`:`${durStr(-debtM)} avg below goal`;
   const maxM=Math.max(...hist.map(h=>Math.max(h.totM,gMin(h.goal))));
   const bars=[...hist].reverse().map(h=>{
     const gm=gMin(h.goal),hPct=Math.min(100,Math.round(h.totM/maxM*100));
@@ -1540,6 +1569,7 @@ function renderHist(){
       <div class="hx-sum-kpi"><span>Avg sleep</span><strong>${durStr(avgTot)}</strong></div>
       <div class="hx-sum-kpi"><span>Avg naps</span><strong>${avgNaps}</strong></div>
       <div class="hx-sum-kpi"><span>Goal hit</span><strong>${goalHit}/${hist.length}</strong></div>
+      <div class="hx-sum-kpi" style="color:var(${debtCls})"><span>Sleep balance</span><strong>${debtLbl}</strong></div>
     </div>
     <div class="hx-chart">${bars}</div>
   </div>`;
@@ -1955,6 +1985,15 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
 
     <!-- WHAT'S NEW -->
     <div class="guide-panel" id="gpUpdates">
+      <div class="cl-entry">
+        <div class="cl-date">Apr 29, 2026</div>
+        <div class="cl-items">
+          <span class="cl-tag fix">FIX</span> PDF export works again — stale library hashes were silently blocking the download. Also improved the error message if export fails.<br>
+          <span class="cl-tag new">NEW</span> Sleep balance tracker — This Week tab now shows your average sleep surplus or deficit vs. the age-appropriate goal<br>
+          <span class="cl-tag new">NEW</span> Bedtime deadline warning — alerts when the last nap ends too close to bedtime, reducing sleep pressure<br>
+          <span class="cl-tag new">NEW</span> Reminder snooze — tap "Snooze 10 min" to push an active reminder back without cancelling it
+        </div>
+      </div>
       <div class="cl-entry">
         <div class="cl-date">Apr 11, 2026</div>
         <div class="cl-items">
