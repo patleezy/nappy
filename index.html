@@ -60,8 +60,8 @@
      FONTS + EXTERNAL LIBS
 ═══════════════════════════════════════ -->
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" onerror="window._html2canvasErr=true"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" onerror="window._jspdfErr=true"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer" onerror="window._html2canvasErr=true"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer" onerror="window._jspdfErr=true"></script>
 <style>
 :root{
   color-scheme: light dark;
@@ -747,7 +747,7 @@ let cdTimer=null;
 // INIT
 // ─────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('todayDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('todayDate').value=localDateStr();
   const n=new Date(),hh=n.getHours().toString().padStart(2,'0'),mm=n.getMinutes().toString().padStart(2,'0');
   document.getElementById('nLW').value=`${hh}:${mm}`;
   document.getElementById('nNS').value=`${hh}:${mm}`;
@@ -949,6 +949,7 @@ function toM(s){if(!s)return -1;const[h,m]=s.split(':').map(Number);return h*60+
 function fmt(m){const t=((m%1440)+1440)%1440,h=Math.floor(t/60),mn=t%60,ap=h>=12?'pm':'am',dh=h%12||12;return`${dh}:${mn.toString().padStart(2,'0')} ${ap}`;}
 function durStr(m){m=Math.abs(Math.round(m));const h=Math.floor(m/60),mn=m%60;return h===0?`${mn} min`:mn===0?`${h} hr`:`${h} hr ${mn} min`;}
 function mts(m){const t=((m%1440)+1440)%1440,h=Math.floor(t/60),mn=t%60;return`${h.toString().padStart(2,'0')}:${mn.toString().padStart(2,'0')}`;}
+function localDateStr(dt){dt=dt||new Date();return`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;}
 function nowM(){const n=new Date();return n.getHours()*60+n.getMinutes();}
 
 // ─────────────────────────────────────
@@ -999,12 +1000,11 @@ function setPlanMode(m){
   const hint = document.getElementById('modeHint');
   if(m==='wake'){
     hint.textContent = 'Build the day forward from when baby woke up';
-    document.querySelector('label[for="mornWake"], .fl').textContent;
     // Show wake, show bedtime goal as target
     document.getElementById('mornWake').closest('.g2').style.opacity='1';
     document.getElementById('mornWake').disabled=false;
   } else {
-    hint.textContent = 'Work backward from bedtime — Nappy calculates ideal nap times to hit it';
+    hint.textContent = 'Work backward from bedtime — naps are placed so the last awake window lands on your bedtime goal';
     document.getElementById('mornWake').closest('.g2').style.opacity='1';
     document.getElementById('mornWake').disabled=false;
   }
@@ -1153,6 +1153,89 @@ function buildPlan(d, wakeM, bedM, lastNapEndStr, napNum, countOvr, loggedNapDur
 }
 
 // ─────────────────────────────────────
+// BUILD NAP PLAN BACKWARD FROM BEDTIME
+// Anchors the last nap so the final wake window lands on the bedtime goal,
+// then walks backward nap by nap. If the naps don't fit after this
+// morning's wake-up (or last nap), the earliest nap is dropped.
+// Returns {plan, idealWake} — idealWake is when the day "should" have
+// started for this bedtime (useful feedback for tomorrow).
+// ─────────────────────────────────────
+function buildPlanFromBed(d, wakeM, bedM, lastNapEndStr, napNum, countOvr, loggedNapDurations){
+  let prevWake = wakeM;
+  if(lastNapEndStr && toM(lastNapEndStr) > wakeM) prevWake = toM(lastNapEndStr);
+  const wws = d.wws || [Math.round((d.ww1 + d.ww2) / 2)];
+  const dMid = Math.round((d.d1 + d.d2) / 2);
+  const bedBuf = d.bedBuf || 60;
+  const count = countOvr !== null ? countOvr : d.n;
+  const alreadyDone = napNum - 1;
+  const banked = Object.values(loggedNapDurations||{}).reduce((s,v)=>s+v.dm, 0);
+  // Final wake window before bed: at least bedBuf. With 2+ naps the last
+  // window of the day is usually the longest, so use the age's last listed
+  // window if bigger. (For 1-nap ages wws holds the pre-nap window, so bedBuf
+  // alone is the right before-bed gap.)
+  const finalWW = count >= 2 ? Math.max(bedBuf, wws[wws.length-1]) : bedBuf;
+  let remaining = Math.max(1, count - alreadyDone);
+  let idealWake = null;
+
+  // For each nap count (starting with the age-typical one), find the longest
+  // nap length that still fits between wake-up and bedtime. Naps are shortened
+  // toward the age minimum first; a nap is only dropped if even minimum-length
+  // naps don't fit.
+  const wwFor = idx => wws[Math.min(idx, wws.length - 1)];
+  const lastNapEnd = bedM - finalWW;
+  let durEach = d.d1;
+  while(true){
+    let wwSum = 0;
+    for(let k = 0; k < remaining; k++) wwSum += wwFor(alreadyDone + k);
+    const budget = Math.max(remaining * d.d1, count * dMid - banked);
+    const budgetDur = Math.min(d.d2, Math.round(budget / remaining));
+    const fitDur = Math.floor((lastNapEnd - prevWake - wwSum) / remaining);
+    durEach = Math.max(d.d1, Math.floor(Math.min(budgetDur, fitDur) / 5) * 5);
+    // When the day 'should' start for this bedtime, using the full nap count
+    // (measured before any nap is dropped)
+    if(idealWake === null) idealWake = lastNapEnd - remaining * Math.max(d.d1, budgetDur) - wwSum;
+    if(fitDur >= d.d1 - 10 || remaining === 1) break; // fits (10 min grace)
+    remaining--;
+  }
+
+  const result = [];
+  const raw = [];
+  let cursor = lastNapEnd;
+  for(let k = remaining - 1; k >= 0; k--){
+    const napIndex = alreadyDone + k;
+    const napWw = wwFor(napIndex);
+    raw.unshift({napIndex, st: cursor - durEach, en: cursor, napWw});
+    cursor = cursor - durEach - napWw;
+  }
+  let pw = prevWake;
+  raw.forEach((r, i)=>{
+    let st = r.st, en = r.en;
+    if(i === 0){
+      // Never schedule a nap before the minimum wake window after waking
+      if(st < pw + d.ww1) st = pw + d.ww1;
+      // Baby woke early: don't let the first window run past the age max —
+      // start earlier and lengthen the nap (up to the age max) to fill.
+      if(st > pw + d.ww2) st = Math.max(pw + d.ww2, en - d.d2);
+    }
+    if(en - st < 10) return; // squeezed out entirely
+    const dm = en - st;
+    const ww = st - pw;
+    let risk = ww < d.ww1 - 10 || ww > d.ww2 + 15 ? 'warn' : 'good';
+    // Bedtime mode deliberately ends the last nap at the buffer — only flag if past it
+    if(en > bedM - bedBuf) risk = 'late';
+    result.push({
+      i: r.napIndex + 1, st, en, dm,
+      ww1: d.ww1, ww2: d.ww2,
+      ws: pw + Math.max(d.ww1, r.napWw - 15), we: pw + Math.min(d.ww2, r.napWw + 15),
+      risk, as: null, ae: null,
+      budgetAdjusted: dm < dMid - 5
+    });
+    pw = en;
+  });
+  return {plan: result, idealWake};
+}
+
+// ─────────────────────────────────────
 // NAP STATUS (live)
 // ─────────────────────────────────────
 function napSt(n){
@@ -1169,7 +1252,7 @@ function napSt(n){
 function isPlanningToday(){
   const sel=document.getElementById('todayDate').value;
   if(!sel) return true; // no date set, assume today
-  const today=new Date().toISOString().split('T')[0];
+  const today=localDateStr();
   return sel===today;
 }
 
@@ -1187,7 +1270,13 @@ function calc(isRecalc){
   const napNum  = parseInt(document.getElementById('nextNapNum').value) || 1;
   const baseD = getSleep(aw);
   const d = profileForDayType(baseD);
-  plan = buildPlan(d, wakeM, bedM, lastNE, napNum, napOvr, loggedNaps);
+  let idealWake = null;
+  if(planMode === 'bed'){
+    const r = buildPlanFromBed(d, wakeM, bedM, lastNE, napNum, napOvr, loggedNaps);
+    plan = r.plan; idealWake = r.idealWake;
+  } else {
+    plan = buildPlan(d, wakeM, bedM, lastNE, napNum, napOvr, loggedNaps);
+  }
 
   const onM  = getON();
   const bankedM = Object.values(loggedNaps).reduce((s,v)=>s+v.dm, 0);
@@ -1218,6 +1307,15 @@ function calc(isRecalc){
   // Overnight block
   h += ssb('🌙','Overnight sleep', durStr(onM), `${fmt(toM(document.getElementById('lastBed').value||'19:30'))} → ${fmt(wakeM)}`);
   h += bridge('☀️ Morning wake-up', fmt(wakeM), '#C8963A');
+  if(planMode === 'bed' && idealWake !== null && napNum === 1){
+    const diff = wakeM - idealWake;
+    const msg = Math.abs(diff) <= 15
+      ? `🎯 Wake-up lines up well with a ${fmt(bedM)} bedtime.`
+      : diff > 0
+        ? `🌙 Planned backward from ${fmt(bedM)}. For this bedtime the ideal wake-up is about ${fmt(idealWake)} — baby woke ${durStr(diff)} later, so ${plan.length < (napOvr!==null?napOvr:d.n) ? `the plan fits ${plan.length} nap${plan.length!==1?'s':''} instead of ${napOvr!==null?napOvr:d.n}` : 'naps are a little shorter to fit'}.`
+        : `🌙 Planned backward from ${fmt(bedM)}. For this bedtime the ideal wake-up is about ${fmt(idealWake)} — baby woke ${durStr(-diff)} earlier, so the first awake window may run long.`;
+    h += `<div style="background:var(--purple-bg);border-radius:10px;padding:8px 12px;font-size:.74rem;color:var(--text);margin:4px 0 8px">${msg}</div>`;
+  }
 
   // If day is in progress, show already-done naps with log fields
   if(napNum > 1){
@@ -1312,6 +1410,7 @@ function calc(isRecalc){
   }
 
   h += ssb('🌙','Bedtime goal', fmt(bedM), 'Wind-down 15–20 min before', true);
+  h += `<div style="text-align:center;font-size:.66rem;color:var(--muted);margin-top:8px">General guidance, not medical advice. Follow your baby's cues and ask your pediatrician about sleep concerns.</div>`;
 
   document.getElementById('tlC').innerHTML = h;
 
@@ -1321,7 +1420,7 @@ function calc(isRecalc){
 
   // Save to history
   saveHist({
-    date: document.getElementById('todayDate').value||new Date().toISOString().split('T')[0],
+    date: document.getElementById('todayDate').value||localDateStr(),
     baby: name, stage: d.stage, napCount: plan.length + (napNum-1),
     onM, dayM, totM, goal: d.tL
   });
@@ -1652,10 +1751,10 @@ function renderProfilesList(){
         <div class="prof-avatar">👶</div>
         <div class="prof-info">
           <div class="prof-name">${san(p.name)}</div>
-          <div class="prof-age">${p.age} ${p.mode}</div>
+          <div class="prof-age">${parseInt(p.age)||0} ${p.mode==='months'?'months':'weeks'}</div>
         </div>
-        <button class="prof-load" onclick="loadProfile('${p.id}')">Load</button>
-        <button class="prof-del" onclick="deleteProfile('${p.id}')" title="Remove">✕</button>
+        <button class="prof-load" onclick="loadProfile('${san(String(p.id)).replace(/'/g,'')}')">Load</button>
+        <button class="prof-del" onclick="deleteProfile('${san(String(p.id)).replace(/'/g,'')}')" title="Remove">✕</button>
       </div>`).join('');
   }
   addWrap.style.display=profiles.length>=3?'none':'block';
@@ -1744,29 +1843,29 @@ function renderHist(){
     return`<div class="hxcard fu" style="animation-delay:${i*.04}s">
       <div class="hx-head">
         <div>
-          <div class="hx-date">${dl}${h.baby&&h.baby!=='Baby'?' · '+h.baby:''}</div>
-          <div class="hx-stage">${h.stage||''}</div>
+          <div class="hx-date">${dl}${h.baby&&h.baby!=='Baby'?' · '+san(h.baby):''}</div>
+          <div class="hx-stage">${san(h.stage||'')}</div>
         </div>
         <div style="display:flex;align-items:flex-start;gap:6px">
           <span class="hx-badge">${h.napCount} nap${h.napCount!==1?'s':''}</span>
-          <button class="hx-del" onclick="delH('${h.date}')">✕</button>
+          <button class="hx-del" onclick="delH('${encodeURIComponent(h.date)}')">✕</button>
         </div>
       </div>
       <div class="hx-stats">
         <div class="hx-stat"><span>Overnight</span><strong>${durStr(h.onM)}</strong></div>
         <div class="hx-stat"><span>Daytime</span><strong>${durStr(h.dayM)}</strong></div>
         <div class="hx-stat"><span>Total</span><strong>${durStr(h.totM)}</strong></div>
-        <div class="hx-stat"><span>Goal</span><strong>${h.goal||'—'}</strong></div>
+        <div class="hx-stat"><span>Goal</span><strong>${san(h.goal||'—')}</strong></div>
       </div>
       <div style="margin-top:9px">
         <div class="pb-track"><div class="pb-fill" style="width:${pct}%"></div></div>
-        <div class="pb-sub">${Math.round(h.totM/60*10)/10} hrs of ${h.goal||'—'} goal</div>
+        <div class="pb-sub">${Math.round(h.totM/60*10)/10} hrs of ${san(h.goal||'—')} goal</div>
       </div>
     </div>`;
   }).join('');
   el.innerHTML=summary+cards;
 }
-function delH(date){try{let h=JSON.parse(localStorage.getItem('nappy_h')||'[]');h=h.filter(x=>x.date!==date);localStorage.setItem('nappy_h',JSON.stringify(h));renderHist();toast('Entry removed');}catch(e){}}
+function delH(date){date=decodeURIComponent(date);try{let h=JSON.parse(localStorage.getItem('nappy_h')||'[]');h=h.filter(x=>x.date!==date);localStorage.setItem('nappy_h',JSON.stringify(h));renderHist();toast('Entry removed');}catch(e){}}
 
 // ─────────────────────────────────────
 // SHARE
@@ -1779,7 +1878,7 @@ function buildSC(){
     return`<div class="sc-row"><div><div class="sc-rn">Nap ${n.i}</div><div class="sc-rt">${fmt(n.st)} → ${fmt(n.en)}${logged}</div></div><div class="sc-rd">~${durStr(n.dm)}</div></div>`;
   }).join('');
   document.getElementById('shareCard').innerHTML=`
-    <div class="sc-h"><div class="sc-logo">🌙</div><div class="sc-t">Nappy</div><div class="sc-s">${name}'s sleep plan · ${date||'Today'}</div></div>
+    <div class="sc-h"><div class="sc-logo">🌙</div><div class="sc-t">Nappy</div><div class="sc-s">${safeName}'s sleep plan · ${san(date||'Today')}</div></div>
     <div class="sc-row"><div><div class="sc-rn">🌙 Overnight sleep</div></div><div class="sc-rd">${durStr(onM)}</div></div>
     ${rows}
     <div class="sc-row"><div><div class="sc-rn">🌙 Bedtime goal</div></div><div class="sc-rd">${fmt(bedM)}</div></div>
